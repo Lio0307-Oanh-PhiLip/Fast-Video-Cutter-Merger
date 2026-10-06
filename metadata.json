@@ -1,0 +1,7 @@
+{
+  "name": "FastCut & Merge - Cross-Platform Lossless Video Studio",
+  "description": "Phần mềm và công cụ cắt ghép video siêu tốc chuẩn Lossless Stream Copy cho Windows và Linux sử dụng FFmpeg & Python.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Fast Video Cutter & Merger Studio
+GenericName=Video Editor & Remuxer
+Comment=Cắt và ghép video siêu tốc Lossless Stream Copy chất lượng cao
+Exec=/usr/bin/python3 /usr/bin/fast-video-editor %F
+TryExec=/usr/bin/fast-video-editor
+Icon=fast-video-editor
+Terminal=false
+StartupWMClass=fast-video-editor
+Categories=AudioVideo;Video;AudioVideoEditing;Recorder;
+MimeType=video/mp4;video/x-matroska;video/quicktime;video/x-msvideo;video/webm;video/x-flv;video/x-ms-wmv;video/3gpp;video/mpeg;audio/mpeg;audio/x-wav;audio/aac;audio/flac;
+Keywords=video;cut;merge;ffmpeg;lossless;remux;audio;
