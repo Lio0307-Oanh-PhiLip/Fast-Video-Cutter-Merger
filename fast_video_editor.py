@@ -188,12 +188,15 @@ def parse_version_tuple(v_str):
         return (0, 0, 0)
 
 def check_github_update_sync(custom_repo=None):
-    """Kiểm tra cập nhật từ GitHub Releases / Tags / Raw Script không đồng bộ"""
+    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script (v3.1.6 PRO)"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     headers = {"User-Agent": "FastVideoEditor-Updater/3.1.6", "Accept": "application/vnd.github.v3+json"}
+
+    saved_cfg = load_app_config()
+    last_known_sha = saved_cfg.get("last_seen_sha", "")
 
     # 1. Thử kiểm tra Releases Latest
     url_latest = f"https://api.github.com/repos/{repo}/releases/latest"
@@ -210,12 +213,13 @@ def check_github_update_sync(custom_repo=None):
                 
                 v_remote = parse_version_tuple(tag_name)
                 v_local = parse_version_tuple(CURRENT_APP_VERSION)
+                has_up = (v_remote > v_local) or (tag_name and tag_name != CURRENT_APP_VERSION and tag_name != f"v{CURRENT_APP_VERSION}")
                 return {
-                    "has_update": v_remote > v_local,
+                    "has_update": has_up,
                     "latest_version": tag_name or CURRENT_APP_VERSION,
                     "name": name,
                     "url": html_url,
-                    "notes": body,
+                    "notes": body or "Đã có bản phát hành mới nhất từ GitHub Releases.",
                     "assets": assets,
                     "repo": repo,
                     "source": "releases_latest"
@@ -223,82 +227,42 @@ def check_github_update_sync(custom_repo=None):
     except Exception:
         pass
 
-    # 2. Thử kiểm tra danh sách Releases (kể cả draft/pre-release)
-    url_releases = f"https://api.github.com/repos/{repo}/releases"
-    try:
-        req = urllib.request.Request(url_releases, headers=headers)
-        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
-            if resp.status == 200:
-                releases_list = json.loads(resp.read().decode("utf-8"))
-                if releases_list and isinstance(releases_list, list):
-                    first = releases_list[0]
-                    tag_name = first.get("tag_name", "").strip()
-                    name = first.get("name", tag_name)
-                    html_url = first.get("html_url", f"https://github.com/{repo}/releases")
-                    body = first.get("body", "")
-                    assets = first.get("assets", [])
-                    v_remote = parse_version_tuple(tag_name)
-                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                    return {
-                        "has_update": v_remote > v_local,
-                        "latest_version": tag_name,
-                        "name": name,
-                        "url": html_url,
-                        "notes": body,
-                        "assets": assets,
-                        "repo": repo,
-                        "source": "releases_list"
-                    }
-    except Exception:
-        pass
-
-    # 3. Thử kiểm tra Tags
-    url_tags = f"https://api.github.com/repos/{repo}/tags"
-    try:
-        req = urllib.request.Request(url_tags, headers=headers)
-        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
-            if resp.status == 200:
-                tags_list = json.loads(resp.read().decode("utf-8"))
-                if tags_list and isinstance(tags_list, list):
-                    tag_name = tags_list[0].get("name", "").strip()
-                    v_remote = parse_version_tuple(tag_name)
-                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                    return {
-                        "has_update": v_remote > v_local,
-                        "latest_version": tag_name,
-                        "name": f"Bản phát hành {tag_name}",
-                        "url": f"https://github.com/{repo}/releases/tag/{tag_name}",
-                        "notes": "Cập nhật mã nguồn mới nhất từ GitHub Tags.",
-                        "assets": [],
-                        "repo": repo,
-                        "source": "tags"
-                    }
-    except Exception:
-        pass
-
-    # 4. Thử kiểm tra trực tiếp raw script
+    # 2. Thử kiểm tra Commits API (nhánh main / master)
     for branch in ["main", "master"]:
-        url_raw = f"https://raw.githubusercontent.com/{repo}/{branch}/fast_video_editor.py"
+        url_commits = f"https://api.github.com/repos/{repo}/commits/{branch}"
         try:
-            req = urllib.request.Request(url_raw, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=4, context=ctx) as resp:
+            req = urllib.request.Request(url_commits, headers=headers)
+            with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
                 if resp.status == 200:
-                    raw_txt = resp.read().decode("utf-8", errors="ignore")
-                    m = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']([^"\']+)["\']', raw_txt)
-                    if m:
-                        remote_v_str = m.group(1).strip()
-                        v_remote = parse_version_tuple(remote_v_str)
-                        v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                        return {
-                            "has_update": v_remote > v_local,
-                            "latest_version": remote_v_str,
-                            "name": f"Bản cập nhật {remote_v_str} (Branch {branch})",
-                            "url": f"https://github.com/{repo}",
-                            "notes": "Mã nguồn mới nhất đã được cập nhật trên nhánh " + branch,
-                            "assets": [],
-                            "repo": repo,
-                            "source": "raw_script"
-                        }
+                    cdata = json.loads(resp.read().decode("utf-8"))
+                    sha = cdata.get("sha", "")[:7]
+                    commit_msg = cdata.get("commit", {}).get("message", "Cập nhật mã nguồn mới").split("\n")[0]
+                    author_date = cdata.get("commit", {}).get("author", {}).get("date", "")
+                    
+                    url_raw = f"https://raw.githubusercontent.com/{repo}/{branch}/fast_video_editor.py"
+                    try:
+                        req_r = urllib.request.Request(url_raw, headers={"User-Agent": "Mozilla/5.0"})
+                        with urllib.request.urlopen(req_r, timeout=4, context=ctx) as resp_r:
+                            if resp_r.status == 200:
+                                raw_txt = resp_r.read().decode("utf-8", errors="ignore")
+                                m = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']([^"\']+)["\']', raw_txt)
+                                remote_v = m.group(1).strip() if m else CURRENT_APP_VERSION
+                                v_remote = parse_version_tuple(remote_v)
+                                v_local = parse_version_tuple(CURRENT_APP_VERSION)
+                                has_up = (v_remote > v_local) or (remote_v != CURRENT_APP_VERSION) or (sha and sha != last_known_sha)
+                                return {
+                                    "has_update": has_up,
+                                    "latest_version": remote_v if remote_v != CURRENT_APP_VERSION else f"v3.1.6-commit-{sha}",
+                                    "name": f"Mã nguồn GitHub ({branch} @ {sha})",
+                                    "url": f"https://github.com/{repo}/tree/{branch}",
+                                    "notes": f"• Thông điệp commit: {commit_msg}\n• Ngày cập nhật: {author_date}\n• Mã commit SHA: {sha}",
+                                    "assets": [],
+                                    "sha": sha,
+                                    "repo": repo,
+                                    "source": "commits"
+                                }
+                    except Exception:
+                        pass
         except Exception:
             pass
 
@@ -556,7 +520,7 @@ _WINDOWS_DND_PROCS = []
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
     Kéo thả file an toàn tuyệt đối 100% (Zero-Crash) trên Windows.
-    Thử tích hợp thư viện windnd hoặc TkinterDnD2, hoàn toàn không can thiệp đè WndProc để tránh crash Tcl/Tk.
+    Sử dụng windnd nếu có, hoàn toàn không gọi DragAcceptFiles trực tiếp lên Tkinter HWND nếu chưa gán hook để tránh crash Tcl/Tk.
     """
     if os.name != "nt":
         return False
@@ -580,24 +544,6 @@ def setup_windows_native_drag_drop(window, on_drop_callback):
             except Exception:
                 pass
         windnd.hook_dropfiles(window, _windnd_wrapper)
-        return True
-    except Exception:
-        pass
-
-    # 2. Bật DragAcceptFiles an toàn trên Win32 HWND mà không đè WndProc
-    try:
-        import ctypes
-        from ctypes import wintypes
-        shell32 = ctypes.windll.shell32
-        DragAcceptFiles = shell32.DragAcceptFiles
-        DragAcceptFiles.argtypes = [ctypes.c_void_p, wintypes.BOOL]
-        DragAcceptFiles.restype = None
-        main_hwnd = window.winfo_id()
-        if main_hwnd:
-            DragAcceptFiles(main_hwnd, True)
-            parent_hwnd = ctypes.windll.user32.GetParent(main_hwnd)
-            if parent_hwnd:
-                DragAcceptFiles(parent_hwnd, True)
         return True
     except Exception:
         return False
