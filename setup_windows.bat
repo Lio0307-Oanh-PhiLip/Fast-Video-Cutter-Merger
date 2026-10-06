@@ -1,17 +1,15 @@
 @echo off
 setlocal EnableExtensions
-chcp 65001 >nul 2>&1
 cd /d "%~dp0"
-title Trình Cài Đặt Fast Video Cutter & Merger Studio v3.1.5 PRO (Next-Next Setup Wizard)
+title Fast Video Cutter and Merger Studio v3.1.6 - Setup Wizard
 cls
 
 echo ==============================================================
-echo    ⚡ FAST VIDEO CUTTER & MERGER STUDIO v3.1.5 PRO
-echo    Trình Hướng Dẫn Cài Đặt Đồ Họa Windows (Next-Next Setup Wizard)
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO
+echo    Windows GUI Setup Wizard (Next-Next Installation)
 echo ==============================================================
 echo.
 
-REM 1. Tìm hoặc tự động tích hợp Python
 set "PYTHON_CMD="
 python --version >nul 2>&1
 if not errorlevel 1 set "PYTHON_CMD=python"
@@ -23,30 +21,28 @@ if "%PYTHON_CMD%"=="" (
 
 if "%PYTHON_CMD%"=="" (
     for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
-        if exist "%%~fD\python.exe" set "PYTHON_CMD="%%~fD\python.exe""
+        if exist "%%~fD\python.exe" set "PYTHON_CMD=%%~fD\python.exe"
     )
 )
 
 if "%PYTHON_CMD%"=="" (
     for /d %%D in ("%ProgramFiles%\Python*") do (
-        if exist "%%~fD\python.exe" set "PYTHON_CMD="%%~fD\python.exe""
+        if exist "%%~fD\python.exe" set "PYTHON_CMD=%%~fD\python.exe"
     )
 )
 
 if "%PYTHON_CMD%"=="" (
-    echo [*] Đang tự động cài đặt Python 3 qua Windows Package Manager...
+    echo [*] Dang tu dong cai dat Python qua winget...
     winget install Python.Python.3.11 --silent --accept-source-agreements --accept-package-agreements >nul 2>&1
     python --version >nul 2>&1 && set "PYTHON_CMD=python"
 )
 
 if "%PYTHON_CMD%"=="" (
-    echo [LỖI] Cần có Python 3 để chạy trình cài đặt.
-    echo Vui lòng tải Python từ https://www.python.org/ (nhớ tick Add Python to PATH).
+    echo [ERROR] Khong tim thay Python. Vui long cai dat Python 3.9+ tu https://python.org
     pause
     exit /b 1
 )
 
-REM 2. Mở Cửa Sổ Trình Hướng Dẫn Cài Đặt Đồ Họa (Next-Next-Install-Finish)
-echo [*] Đang mở Trình Cài Đặt Giao Diện Đồ Họa (Setup Wizard Next-Next)...
+echo [*] Dang mo Trinh Huong Dan Cai Dat Do Hoa (Setup Wizard)...
 start "" %PYTHON_CMD% setup_wizard.py
 exit /b 0

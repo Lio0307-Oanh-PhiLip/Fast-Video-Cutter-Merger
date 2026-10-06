@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================
-# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.1.5 PRO
+# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.1.6 PRO
 # ==============================================================
 
 set -e
@@ -8,7 +8,7 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 echo -e "\033[0;32m==============================================================\033[0m"
-echo -e "\033[0;32m   ⚡ Fast Video Cutter & Merger - Stream Copy (Linux v3.1.5 PRO)\033[0m"
+echo -e "\033[0;32m   ⚡ Fast Video Cutter & Merger - Stream Copy (Linux v3.1.6 PRO)\033[0m"
 echo -e "\033[0;32m==============================================================\033[0m"
 
 # 1. Kiểm tra Python 3
@@ -43,5 +43,5 @@ if [ -f "$DIR/fast-video-editor.png" ]; then
 fi
 
 # 5. Khởi chạy ứng dụng bằng Python 3
-echo "Khởi động giao diện Fast Video Editor Studio v3.1.5..."
+echo "Khởi động giao diện Fast Video Editor Studio v3.1.6..."
 /usr/bin/env python3 "$DIR/fast_video_editor.py" "$@"

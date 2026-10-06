@@ -2,11 +2,11 @@
 setlocal EnableExtensions
 chcp 65001 >nul 2>&1
 cd /d "%~dp0"
-title Trình Cài Đặt Fast Video Cutter & Merger Studio v3.1.5 PRO (Next-Next Setup Wizard)
+title Trình Cài Đặt Fast Video Cutter & Merger Studio v3.1.6 PRO (Next-Next Setup Wizard)
 cls
 
 echo ==============================================================
-echo    ⚡ FAST VIDEO CUTTER & MERGER STUDIO v3.1.5 PRO
+echo    ⚡ FAST VIDEO CUTTER & MERGER STUDIO v3.1.6 PRO
 echo    Trình Hướng Dẫn Cài Đặt Đồ Họa Windows (Next-Next Setup Wizard)
 echo ==============================================================
 echo.
