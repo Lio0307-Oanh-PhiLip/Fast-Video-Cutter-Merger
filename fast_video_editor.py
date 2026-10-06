@@ -143,54 +143,172 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 # =====================================================================
-# BỘ TỰ ĐỘNG KIỂM TRA & TẢI BẢN CẬP NHẬT GITHUB (v3.1.6 PRO)
+# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.1.6 PRO)
 # =====================================================================
 CURRENT_APP_VERSION = "v3.1.6"
-GITHUB_REPO = "philiptrinh1990/FastVideoEditor"
-GITHUB_RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
-GITHUB_API_LATEST = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+DEFAULT_GITHUB_REPO = "philiptrinh1990/FastVideoEditor"
+
+def get_config_file_path():
+    return os.path.join(get_user_data_dir(), "app_config.json")
+
+def load_app_config():
+    p = get_config_file_path()
+    try:
+        if os.path.isfile(p):
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {"github_repo": DEFAULT_GITHUB_REPO}
+
+def save_app_config(cfg):
+    p = get_config_file_path()
+    try:
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+def clean_github_repo_name(raw_name):
+    s = str(raw_name or "").strip()
+    s = re.sub(r'^https?://github\.com/', '', s, flags=re.IGNORECASE)
+    s = re.sub(r'\.git$', '', s, flags=re.IGNORECASE)
+    s = s.strip('/')
+    return s or DEFAULT_GITHUB_REPO
 
 def parse_version_tuple(v_str):
     try:
         clean = re.sub(r'[^0-9.]', '', str(v_str)).strip('.')
-        return tuple(map(int, clean.split('.')))
+        parts = [int(p) for p in clean.split('.') if p.isdigit()]
+        while len(parts) < 3:
+            parts.append(0)
+        return tuple(parts[:3])
     except Exception:
         return (0, 0, 0)
 
-def check_github_update_sync():
-    """Kiểm tra bản cập nhật mới từ GitHub Releases qua HTTPS không đồng bộ (Zero Lag / Zero Freeze)"""
+def check_github_update_sync(custom_repo=None):
+    """Kiểm tra cập nhật từ GitHub Releases / Tags / Raw Script không đồng bộ"""
+    repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    headers = {"User-Agent": "FastVideoEditor-Updater/3.1.6", "Accept": "application/vnd.github.v3+json"}
+
+    # 1. Thử kiểm tra Releases Latest
+    url_latest = f"https://api.github.com/repos/{repo}/releases/latest"
     try:
-        req = urllib.request.Request(
-            GITHUB_API_LATEST, 
-            headers={"User-Agent": "FastVideoEditor-UpdateChecker/3.1.6", "Accept": "application/vnd.github.v3+json"}
-        )
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        with urllib.request.urlopen(req, timeout=4, context=ctx) as resp:
+        req = urllib.request.Request(url_latest, headers=headers)
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
             if resp.status == 200:
                 data = json.loads(resp.read().decode("utf-8"))
                 tag_name = data.get("tag_name", "").strip()
                 name = data.get("name", tag_name)
-                html_url = data.get("html_url", GITHUB_RELEASES_URL)
+                html_url = data.get("html_url", f"https://github.com/{repo}/releases")
                 body = data.get("body", "")
                 assets = data.get("assets", [])
                 
                 v_remote = parse_version_tuple(tag_name)
                 v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                
-                if v_remote > v_local:
+                return {
+                    "has_update": v_remote > v_local,
+                    "latest_version": tag_name or CURRENT_APP_VERSION,
+                    "name": name,
+                    "url": html_url,
+                    "notes": body,
+                    "assets": assets,
+                    "repo": repo,
+                    "source": "releases_latest"
+                }
+    except Exception:
+        pass
+
+    # 2. Thử kiểm tra danh sách Releases (kể cả draft/pre-release)
+    url_releases = f"https://api.github.com/repos/{repo}/releases"
+    try:
+        req = urllib.request.Request(url_releases, headers=headers)
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
+            if resp.status == 200:
+                releases_list = json.loads(resp.read().decode("utf-8"))
+                if releases_list and isinstance(releases_list, list):
+                    first = releases_list[0]
+                    tag_name = first.get("tag_name", "").strip()
+                    name = first.get("name", tag_name)
+                    html_url = first.get("html_url", f"https://github.com/{repo}/releases")
+                    body = first.get("body", "")
+                    assets = first.get("assets", [])
+                    v_remote = parse_version_tuple(tag_name)
+                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
                     return {
-                        "has_update": True,
+                        "has_update": v_remote > v_local,
                         "latest_version": tag_name,
                         "name": name,
                         "url": html_url,
                         "notes": body,
-                        "assets": assets
+                        "assets": assets,
+                        "repo": repo,
+                        "source": "releases_list"
                     }
     except Exception:
         pass
-    return {"has_update": False, "latest_version": CURRENT_APP_VERSION, "url": GITHUB_RELEASES_URL, "assets": []}
+
+    # 3. Thử kiểm tra Tags
+    url_tags = f"https://api.github.com/repos/{repo}/tags"
+    try:
+        req = urllib.request.Request(url_tags, headers=headers)
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
+            if resp.status == 200:
+                tags_list = json.loads(resp.read().decode("utf-8"))
+                if tags_list and isinstance(tags_list, list):
+                    tag_name = tags_list[0].get("name", "").strip()
+                    v_remote = parse_version_tuple(tag_name)
+                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
+                    return {
+                        "has_update": v_remote > v_local,
+                        "latest_version": tag_name,
+                        "name": f"Bản phát hành {tag_name}",
+                        "url": f"https://github.com/{repo}/releases/tag/{tag_name}",
+                        "notes": "Cập nhật mã nguồn mới nhất từ GitHub Tags.",
+                        "assets": [],
+                        "repo": repo,
+                        "source": "tags"
+                    }
+    except Exception:
+        pass
+
+    # 4. Thử kiểm tra trực tiếp raw script
+    for branch in ["main", "master"]:
+        url_raw = f"https://raw.githubusercontent.com/{repo}/{branch}/fast_video_editor.py"
+        try:
+            req = urllib.request.Request(url_raw, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=4, context=ctx) as resp:
+                if resp.status == 200:
+                    raw_txt = resp.read().decode("utf-8", errors="ignore")
+                    m = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']([^"\']+)["\']', raw_txt)
+                    if m:
+                        remote_v_str = m.group(1).strip()
+                        v_remote = parse_version_tuple(remote_v_str)
+                        v_local = parse_version_tuple(CURRENT_APP_VERSION)
+                        return {
+                            "has_update": v_remote > v_local,
+                            "latest_version": remote_v_str,
+                            "name": f"Bản cập nhật {remote_v_str} (Branch {branch})",
+                            "url": f"https://github.com/{repo}",
+                            "notes": "Mã nguồn mới nhất đã được cập nhật trên nhánh " + branch,
+                            "assets": [],
+                            "repo": repo,
+                            "source": "raw_script"
+                        }
+        except Exception:
+            pass
+
+    return {
+        "has_update": False,
+        "latest_version": CURRENT_APP_VERSION,
+        "url": f"https://github.com/{repo}",
+        "repo": repo,
+        "error": f"Không thể kết nối hoặc chưa tìm thấy kho GitHub: {repo}"
+    }
 
 
 class AppUpdateDialog(tk.Toplevel):
@@ -201,8 +319,8 @@ class AppUpdateDialog(tk.Toplevel):
         self.update_info = update_info
         ver = update_info.get("latest_version", "Mới")
         self.title(f"⚡ Cập Nhật Fast Video Editor - {ver}")
-        self.geometry("540x420")
-        self.resizable(False, False)
+        self.geometry("560x440")
+        self.minsize(520, 400)
         self.configure(bg="#0f172a")
         self.transient(parent)
         self.grab_set()
@@ -223,8 +341,9 @@ class AppUpdateDialog(tk.Toplevel):
             font=("Segoe UI", 12, "bold"), fg="#818cf8", bg="#1e1b4b"
         ).pack(anchor="w")
 
+        repo_name = update_info.get("repo", DEFAULT_GITHUB_REPO)
         tk.Label(
-            hdr, text=f"Phiên bản đang dùng: {CURRENT_APP_VERSION} PRO  ➔  Phiên bản mới: {ver} PRO", 
+            hdr, text=f"Kho lưu trữ: github.com/{repo_name}  •  Hiện tại: {CURRENT_APP_VERSION} ➔ Mới: {ver}", 
             font=("Segoe UI", 9), fg="#cbd5e1", bg="#1e1b4b"
         ).pack(anchor="w", pady=(2, 0))
 
@@ -239,9 +358,9 @@ class AppUpdateDialog(tk.Toplevel):
 
         self.txt_notes = tk.Text(body, bg="#1e293b", fg="#e2e8f0", font=("Consolas", 8), height=8, relief="flat", padx=8, pady=8)
         self.txt_notes.pack(fill="both", expand=True, pady=6)
-        notes = update_info.get("notes", "").strip() or ("• Tối ưu hiệu năng xử lý Lossless\n"
-                                                          "• Nâng cấp kéo thả video siêu tốc\n"
-                                                          "• Cập nhật bản cài đặt tự động 1-click.")
+        notes = (update_info.get("notes") or "").strip() or ("• Tối ưu hiệu năng xử lý Lossless\n"
+                                                              "• Nâng cấp kéo thả video siêu tốc\n"
+                                                              "• Cập nhật bản cài đặt tự động 1-click.")
         self.txt_notes.insert("1.0", notes)
         self.txt_notes.config(state="disabled")
 
@@ -268,7 +387,7 @@ class AppUpdateDialog(tk.Toplevel):
         self.btn_close.pack(side="left")
 
         self.btn_browser = tk.Button(
-            footer, text="🌐 Xem GitHub", bg="#475569", fg="#ffffff", 
+            footer, text="🌐 Mở GitHub", bg="#475569", fg="#ffffff", 
             font=("Segoe UI", 9), relief="flat", command=self.open_browser
         )
         self.btn_browser.pack(side="left", padx=6)
@@ -282,7 +401,7 @@ class AppUpdateDialog(tk.Toplevel):
     def open_browser(self):
         try:
             import webbrowser
-            webbrowser.open(self.update_info.get("url", GITHUB_RELEASES_URL))
+            webbrowser.open(self.update_info.get("url", f"https://github.com/{self.update_info.get('repo', DEFAULT_GITHUB_REPO)}"))
         except Exception:
             pass
 
@@ -304,6 +423,7 @@ class AppUpdateDialog(tk.Toplevel):
             self.update_ui("Đang tìm gói cài đặt phù hợp từ GitHub...", 10)
             assets = self.update_info.get("assets", [])
             tag = self.update_info.get("latest_version", "latest")
+            repo = self.update_info.get("repo", DEFAULT_GITHUB_REPO)
             download_url = None
             dest_filename = None
 
@@ -329,9 +449,9 @@ class AppUpdateDialog(tk.Toplevel):
                         dest_filename = a.get("name")
                         break
 
-            # 2. Nếu không có asset đóng gói sẵn, tải zip source code từ release tag
+            # 2. Nếu không có asset đóng gói sẵn, tải zip từ release tag / repo archive
             if not download_url:
-                download_url = f"https://github.com/{GITHUB_REPO}/archive/refs/tags/{tag}.zip"
+                download_url = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
                 dest_filename = f"FastVideoEditor_{tag}.zip"
 
             save_dir = get_user_data_dir()
@@ -339,28 +459,35 @@ class AppUpdateDialog(tk.Toplevel):
 
             self.update_ui(f"Đang tải: {dest_filename}...", 20)
 
-            # Tải file qua urllib với SSL context
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
 
             req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
-            with urllib.request.urlopen(req, timeout=30, context=ctx) as response:
-                total_size = int(response.headers.get('content-length', 0))
-                downloaded = 0
-                block_size = 65536
-                with open(dest_path, 'wb') as out_file:
-                    while True:
-                        buffer = response.read(block_size)
-                        if not buffer:
-                            break
-                        downloaded += len(buffer)
-                        out_file.write(buffer)
-                        if total_size > 0:
-                            percent = int(20 + (downloaded / total_size) * 70)
-                            mb_cur = downloaded / (1024 * 1024)
-                            mb_tot = total_size / (1024 * 1024)
-                            self.update_ui(f"Đang tải ({mb_cur:.1f}/{mb_tot:.1f} MB)...", percent)
+            try:
+                with urllib.request.urlopen(req, timeout=30, context=ctx) as response:
+                    total_size = int(response.headers.get('content-length', 0))
+                    downloaded = 0
+                    block_size = 65536
+                    with open(dest_path, 'wb') as out_file:
+                        while True:
+                            buffer = response.read(block_size)
+                            if not buffer:
+                                break
+                            downloaded += len(buffer)
+                            out_file.write(buffer)
+                            if total_size > 0:
+                                percent = int(20 + (downloaded / total_size) * 70)
+                                mb_cur = downloaded / (1024 * 1024)
+                                mb_tot = total_size / (1024 * 1024)
+                                self.update_ui(f"Đang tải ({mb_cur:.1f}/{mb_tot:.1f} MB)...", percent)
+            except Exception:
+                # Fallback tải raw script nếu zip tag lỗi
+                download_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
+                dest_path = os.path.join(save_dir, "fast_video_editor.py")
+                req2 = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req2, timeout=20, context=ctx) as resp, open(dest_path, "wb") as f_out:
+                    f_out.write(resp.read())
 
             self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp...", 95)
             time.sleep(0.5)
@@ -372,16 +499,21 @@ class AppUpdateDialog(tk.Toplevel):
                     self.after(500, lambda: (self.parent.destroy(), sys.exit(0)))
                     return
                 elif dest_path.lower().endswith(".zip"):
-                    # Giải nén đè vào thư mục app
                     shutil.unpack_archive(dest_path, save_dir)
                     self.update_ui("✅ Đã cập nhật thành công!", 100)
                     messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã tải và giải nén bản cập nhật {tag}.\nVui lòng khởi động lại ứng dụng.")
+                else:
+                    # File python script
+                    app_dir = get_app_dir()
+                    target_script = os.path.join(app_dir, "fast_video_editor.py")
+                    if os.path.abspath(dest_path) != os.path.abspath(target_script):
+                        try: shutil.copy2(dest_path, target_script)
+                        except Exception: pass
+                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã cập nhật mã nguồn mới {tag}.\nVui lòng khởi động lại ứng dụng.")
             else:
                 if dest_path.lower().endswith(".deb"):
-                    try:
-                        subprocess.Popen(["pkexec", "dpkg", "-i", dest_path])
-                    except Exception:
-                        subprocess.Popen(["xdg-open", dest_path])
+                    try: subprocess.Popen(["pkexec", "dpkg", "-i", dest_path])
+                    except Exception: subprocess.Popen(["xdg-open", dest_path])
                 else:
                     shutil.unpack_archive(dest_path, save_dir)
                     messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã tải bản cập nhật {tag} vào {save_dir}.")
@@ -391,7 +523,7 @@ class AppUpdateDialog(tk.Toplevel):
 
         except Exception as e:
             self.update_ui(f"Lỗi tải: {str(e)[:40]}", 0)
-            messagebox.showerror("Lỗi Cập Nhật", f"Không thể tự động tải bản cập nhật:\n{str(e)}\n\nVui lòng bấm 'Xem GitHub' để tải thủ công.")
+            messagebox.showerror("Lỗi Cập Nhật", f"Không thể tự động tải bản cập nhật:\n{str(e)}\n\nVui lòng bấm 'Mở GitHub' để tải thủ công.")
             self.btn_auto_update.config(state="normal", bg="#4f46e5")
             self.btn_browser.config(state="normal")
             self.is_downloading = False
@@ -418,15 +550,14 @@ else:
     class BaseAppWindow(tk.Tk):
         pass
 
+# Global storage for ctypes callbacks to prevent garbage collection
+_WINDOWS_DND_PROCS = []
+
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
-    Hook WM_DROPFILES natively on Windows using ctypes without any external library (v3.1.6 PRO).
-    100% crash-proof, 64-bit and 32-bit compatible, Unicode-aware (DragQueryFileW).
-    Follows Win32 specifications:
-      1. Calls DragAcceptFiles(hwnd, True)
-      2. Subclasses window with SetWindowLongPtrW using c_void_p to prevent 64-bit pointer truncation
-      3. On WM_DROPFILES: queries paths with DragQueryFileW, calls DragFinish, schedules callback on main thread via window.after(0, ...)
-      4. CRITICAL: Returns 0 immediately for WM_DROPFILES as required by MSDN (NEVER passes freed hDrop to CallWindowProc).
+    Hook WM_DROPFILES natively on Windows using pure ctypes (v3.1.6 PRO).
+    Hooks both window and all child widgets, Unicode-aware (DragQueryFileW), 64-bit safe.
+    Returns 0 immediately for WM_DROPFILES as required by MSDN.
     """
     if os.name != "nt":
         return False
@@ -482,32 +613,50 @@ def setup_windows_native_drag_drop(window, on_drop_callback):
         
         WNDPROC_PROTO = ctypes.WINFUNCTYPE(LRESULT, HWND, UINT, WPARAM, LPARAM)
         
-        hwnd = window.winfo_id()
-        DragAcceptFiles(hwnd, True)
-        old_proc = GetWindowLongPtr(hwnd, GWLP_WNDPROC)
-        
-        def new_wndproc(h, msg, wp, lp):
-            if msg == WM_DROPFILES:
-                try:
-                    num_files = DragQueryFileW(wp, 0xFFFFFFFF, None, 0)
-                    file_list = []
-                    buf = ctypes.create_unicode_buffer(2048)
-                    for i in range(num_files):
-                        DragQueryFileW(wp, i, buf, 2048)
-                        if buf.value:
-                            file_list.append(buf.value)
-                    DragFinish(wp)
-                    if file_list and on_drop_callback:
-                        window.after(0, lambda fl=file_list: on_drop_callback(fl))
-                except Exception:
-                    pass
-                return 0
-            return CallWindowProc(old_proc, h, msg, wp, lp)
-            
-        new_proc_cb = WNDPROC_PROTO(new_wndproc)
-        window._native_drop_cb = new_proc_cb
-        window._native_old_proc = old_proc
-        SetWindowLongPtr(hwnd, GWLP_WNDPROC, ctypes.cast(new_proc_cb, ctypes.c_void_p))
+        # Danh sach HWND can hook (Cua so chinh + Top-level Frame)
+        hwnds_to_hook = []
+        try:
+            main_hwnd = window.winfo_id()
+            hwnds_to_hook.append(main_hwnd)
+            parent_hwnd = user32.GetParent(main_hwnd)
+            if parent_hwnd:
+                hwnds_to_hook.append(parent_hwnd)
+        except Exception:
+            pass
+
+        for h in hwnds_to_hook:
+            try:
+                DragAcceptFiles(h, True)
+                old_proc = GetWindowLongPtr(h, GWLP_WNDPROC)
+                if not old_proc:
+                    continue
+
+                def make_proc(original_proc):
+                    def _proc(hwnd_val, msg, wp, lp):
+                        if msg == WM_DROPFILES:
+                            try:
+                                num_files = DragQueryFileW(wp, 0xFFFFFFFF, None, 0)
+                                file_list = []
+                                buf = ctypes.create_unicode_buffer(2048)
+                                for i in range(num_files):
+                                    DragQueryFileW(wp, i, buf, 2048)
+                                    if buf.value:
+                                        file_list.append(buf.value)
+                                DragFinish(wp)
+                                if file_list and on_drop_callback:
+                                    window.after(0, lambda fl=file_list: on_drop_callback(fl))
+                            except Exception:
+                                pass
+                            return 0
+                        return CallWindowProc(original_proc, hwnd_val, msg, wp, lp)
+                    return _proc
+
+                new_proc_func = make_proc(old_proc)
+                new_proc_cb = WNDPROC_PROTO(new_proc_func)
+                _WINDOWS_DND_PROCS.append(new_proc_cb)
+                SetWindowLongPtr(h, GWLP_WNDPROC, ctypes.cast(new_proc_cb, ctypes.c_void_p))
+            except Exception:
+                pass
         return True
     except Exception:
         return False
@@ -1696,31 +1845,44 @@ class VideoEditorApp(BaseAppWindow):
     def show_update_banner(self, update_info):
         try:
             ver = update_info.get("latest_version", "Mới")
-            self.lbl_update_text.config(text=f"🚀 Đã có bản cập nhật {ver} trên GitHub! (Phiên bản hiện tại: {CURRENT_APP_VERSION})")
+            repo = update_info.get("repo", DEFAULT_GITHUB_REPO)
+            self.lbl_update_text.config(text=f"🚀 Đã có bản cập nhật {ver} trên GitHub (github.com/{repo})! (Bản hiện tại: {CURRENT_APP_VERSION})")
             self.update_banner_frame.pack(fill="x", before=self.notebook)
-            self.status_var.set(f"Thông báo: Đã có bản cập nhật mới {ver} trên GitHub.")
+            self.last_update_info = update_info
+            self.status_var.set(f"Thông báo: Đã có bản cập nhật mới {ver} trên GitHub ({repo}).")
         except Exception:
             pass
 
     def open_github_releases(self):
-        try:
-            import webbrowser
-            webbrowser.open(GITHUB_RELEASES_URL)
-        except Exception:
-            pass
+        if getattr(self, "last_update_info", None):
+            AppUpdateDialog(self, self.last_update_info)
+        else:
+            self.check_updates_manual()
 
     def check_updates_manual(self):
-        self.status_var.set("Đang kiểm tra bản cập nhật mới từ GitHub...")
+        curr_repo = clean_github_repo_name(getattr(self, "github_repo_var", None) and self.github_repo_var.get() or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
+        self.status_var.set(f"Đang kiểm tra bản cập nhật từ GitHub ({curr_repo})...")
         def worker():
-            res = check_github_update_sync()
+            res = check_github_update_sync(curr_repo)
             def update_ui():
+                if getattr(self, "lbl_update_status_detail", None):
+                    if res.get("error"):
+                        self.lbl_update_status_detail.config(text=f"⚠️ {res.get('error')}", fg="#f59e0b")
+                    else:
+                        self.lbl_update_status_detail.config(text=f"✅ Đã kết nối: github.com/{curr_repo} (Bản mới nhất: {res.get('latest_version')})", fg="#34d399")
+                
                 if res.get("has_update"):
-                    ver = res.get("latest_version")
-                    msg = f"Đã có phiên bản mới: {ver} trên GitHub!\n(Phiên bản hiện tại: {CURRENT_APP_VERSION})\n\nBạn có muốn mở trang GitHub Releases để tải bản mới nhất không?"
-                    if messagebox.askyesno("Đã Có Bản Cập Nhật Mới", msg):
-                        self.open_github_releases()
+                    self.last_update_info = res
+                    AppUpdateDialog(self, res)
+                elif res.get("error"):
+                    msg = (f"{res.get('error')}\n\n"
+                           f"Hướng dẫn:\n"
+                           f"1. Hãy nhập đúng định dạng 'TênTàiKhoản/TênDựÁn' trên GitHub (Ví dụ: 'philiptrinh1990/FastVideoEditor' hoặc link repo của bạn).\n"
+                           f"2. Đảm bảo kho lưu trữ trên GitHub đang ở chế độ Public.\n"
+                           f"3. Đã tạo Release / Tag hoặc upload mã nguồn lên nhánh main/master.")
+                    messagebox.showwarning("Kiểm Tra Kho GitHub", msg)
                 else:
-                    messagebox.showinfo("Cập Nhật Ứng Dụng", f"Bạn đang sử dụng phiên bản mới nhất ({CURRENT_APP_VERSION} PRO).\nHệ thống đã được tối ưu hoàn hảo!")
+                    messagebox.showinfo("Cập Nhật Ứng Dụng", f"Bạn đang sử dụng phiên bản mới nhất ({CURRENT_APP_VERSION} PRO).\nKho lưu trữ: github.com/{curr_repo}\nHệ thống đã được tối ưu hoàn hảo!")
                 self.status_var.set("Kiểm tra cập nhật hoàn tất.")
             self.after(0, update_ui)
         threading.Thread(target=worker, daemon=True).start()
@@ -1896,8 +2058,15 @@ class VideoEditorApp(BaseAppWindow):
         return clean
 
     def init_drag_and_drop_handlers(self):
-        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND) và Windows (v3.1.6 PRO)"""
-        # 1. Đăng ký TkinterDnD2 trên các widget (Linux X11/Wayland và Windows OLE - 100% không crash)
+        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND) và Windows Native Win32 (v3.1.6 PRO)"""
+        # 1. Trên Windows: Luôn kích hoạt native Win32 WM_DROPFILES hook cực kỳ ổn định (Zero-Crash)
+        if os.name == "nt":
+            try:
+                setup_windows_native_drag_drop(self, self._on_global_drop)
+            except Exception:
+                pass
+
+        # 2. Đăng ký TkinterDnD2 trên tất cả widget nếu có (Linux X11/Wayland và Windows OLE)
         if HAS_TKDND:
             target_widgets = [
                 (getattr(self, "cut_drop_zone", None), lambda e: self.on_cut_files_received(self._parse_dnd_event_data(e.data))),
@@ -1927,16 +2096,6 @@ class VideoEditorApp(BaseAppWindow):
                                 w.dnd_bind("<<Drop>>", handler)
                         except Exception:
                             pass
-
-        # 2. Dự phòng trên Windows nếu chưa cài tkinterdnd2: dùng windnd an toàn trên root window duy nhất
-        elif HAS_WINDND and os.name == "nt":
-            try:
-                import windnd
-                def _safe_win_drop(files):
-                    self.after(0, lambda: self._on_global_drop(files))
-                windnd.hook_dropfiles(self, func=_safe_win_drop, force_unicode=True)
-            except Exception:
-                pass
 
     def _on_global_drop(self, files):
         if not files: return
@@ -3096,6 +3255,31 @@ class VideoEditorApp(BaseAppWindow):
 
         tk.Button(row_ff_btns, text="⚡ Tự Động Tải & Cài Đặt FFmpeg Ngay (1-Click)", bg="#0284c7", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.start_auto_download_ffmpeg).pack(side="left", padx=4)
         tk.Button(row_ff_btns, text="🔄 Kiểm Tra Lại", bg="#334155", fg="#ffffff", font=("Segoe UI", 9), relief="flat", command=self.refresh_ffmpeg_status).pack(side="left", padx=4)
+
+        # CẤU HÌNH KHO GITHUB & TỰ ĐỘNG CẬP NHẬT
+        box_update = tk.LabelFrame(p, text=" ⚡ Cập Nhật Tự Động & Kho Lưu Trữ GitHub ", font=("Segoe UI", 10, "bold"), fg="#818cf8", bg="#0f172a", padx=16, pady=12)
+        box_update.pack(fill="x", pady=8)
+
+        tk.Label(box_update, text="Tên Kho GitHub (Định dạng 'TênTàiKhoản/TênDựÁn' hoặc dán link GitHub):", font=("Segoe UI", 9), fg="#cbd5e1", bg="#0f172a").pack(anchor="w")
+
+        row_repo = tk.Frame(box_update, bg="#0f172a")
+        row_repo.pack(fill="x", pady=(4, 6))
+
+        saved_repo = load_app_config().get("github_repo", DEFAULT_GITHUB_REPO)
+        self.github_repo_var = tk.StringVar(value=saved_repo)
+        self.ent_github_repo = tk.Entry(row_repo, textvariable=self.github_repo_var, font=("Consolas", 10), bg="#1e293b", fg="#38bdf8", relief="flat")
+        self.ent_github_repo.pack(side="left", fill="x", expand=True, ipady=4, padx=(0, 6))
+
+        def save_and_test_repo():
+            r_val = clean_github_repo_name(self.github_repo_var.get())
+            self.github_repo_var.set(r_val)
+            save_app_config({"github_repo": r_val})
+            self.check_updates_manual()
+
+        tk.Button(row_repo, text="🔍 Lưu & Kiểm Tra Cập Nhật", bg="#4f46e5", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=save_and_test_repo).pack(side="right")
+
+        self.lbl_update_status_detail = tk.Label(box_update, text=f"• Hiện tại: {CURRENT_APP_VERSION} PRO | Kho lưu trữ cấu hình: {saved_repo}", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a")
+        self.lbl_update_status_detail.pack(anchor="w", pady=(2, 0))
 
         box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.1.6 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=16, pady=12)
         box_info.pack(fill="x", pady=12)
