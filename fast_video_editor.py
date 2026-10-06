@@ -146,7 +146,7 @@ sys.excepthook = handle_uncaught_exception
 # BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.1.6 PRO)
 # =====================================================================
 CURRENT_APP_VERSION = "v3.1.6"
-DEFAULT_GITHUB_REPO = "philiptrinh1990/FastVideoEditor"
+DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
     return os.path.join(get_user_data_dir(), "app_config.json")
@@ -188,7 +188,7 @@ def parse_version_tuple(v_str):
         return (0, 0, 0)
 
 def check_github_update_sync(custom_repo=None):
-    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script (v3.1.6 PRO)"""
+    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.1.6 PRO)"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -198,32 +198,33 @@ def check_github_update_sync(custom_repo=None):
     saved_cfg = load_app_config()
     last_known_sha = saved_cfg.get("last_seen_sha", "")
 
-    # 1. Thử kiểm tra Releases Latest
-    url_latest = f"https://api.github.com/repos/{repo}/releases/latest"
+    # 1. Thử kiểm tra Releases Latest & List
+    url_releases = f"https://api.github.com/repos/{repo}/releases"
     try:
-        req = urllib.request.Request(url_latest, headers=headers)
+        req = urllib.request.Request(url_releases, headers=headers)
         with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
             if resp.status == 200:
-                data = json.loads(resp.read().decode("utf-8"))
-                tag_name = data.get("tag_name", "").strip()
-                name = data.get("name", tag_name)
-                html_url = data.get("html_url", f"https://github.com/{repo}/releases")
-                body = data.get("body", "")
-                assets = data.get("assets", [])
-                
-                v_remote = parse_version_tuple(tag_name)
-                v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                has_up = (v_remote > v_local) or (tag_name and tag_name != CURRENT_APP_VERSION and tag_name != f"v{CURRENT_APP_VERSION}")
-                return {
-                    "has_update": has_up,
-                    "latest_version": tag_name or CURRENT_APP_VERSION,
-                    "name": name,
-                    "url": html_url,
-                    "notes": body or "Đã có bản phát hành mới nhất từ GitHub Releases.",
-                    "assets": assets,
-                    "repo": repo,
-                    "source": "releases_latest"
-                }
+                releases_list = json.loads(resp.read().decode("utf-8"))
+                if releases_list and isinstance(releases_list, list):
+                    first = releases_list[0]
+                    tag_name = first.get("tag_name", "").strip()
+                    name = first.get("name", tag_name)
+                    html_url = first.get("html_url", f"https://github.com/{repo}/releases")
+                    body = first.get("body", "")
+                    assets = first.get("assets", [])
+                    v_remote = parse_version_tuple(tag_name)
+                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
+                    has_up = (v_remote > v_local) or (tag_name and tag_name != CURRENT_APP_VERSION and tag_name != f"v{CURRENT_APP_VERSION}")
+                    return {
+                        "has_update": has_up,
+                        "latest_version": tag_name or CURRENT_APP_VERSION,
+                        "name": name,
+                        "url": html_url,
+                        "notes": body or "Đã có bản cập nhật mới được phát hành trên GitHub.",
+                        "assets": assets,
+                        "repo": repo,
+                        "source": "releases"
+                    }
     except Exception:
         pass
 
@@ -252,10 +253,10 @@ def check_github_update_sync(custom_repo=None):
                                 has_up = (v_remote > v_local) or (remote_v != CURRENT_APP_VERSION) or (sha and sha != last_known_sha)
                                 return {
                                     "has_update": has_up,
-                                    "latest_version": remote_v if remote_v != CURRENT_APP_VERSION else f"v3.1.6-commit-{sha}",
-                                    "name": f"Mã nguồn GitHub ({branch} @ {sha})",
+                                    "latest_version": remote_v if remote_v != CURRENT_APP_VERSION else f"{CURRENT_APP_VERSION} (Commit @ {sha})",
+                                    "name": f"Mã nguồn GitHub {repo} ({branch} @ {sha})",
                                     "url": f"https://github.com/{repo}/tree/{branch}",
-                                    "notes": f"• Thông điệp commit: {commit_msg}\n• Ngày cập nhật: {author_date}\n• Mã commit SHA: {sha}",
+                                    "notes": f"• Thông điệp commit: {commit_msg}\n• Ngày cập nhật: {author_date}\n• Mã SHA: {sha}",
                                     "assets": [],
                                     "sha": sha,
                                     "repo": repo,
@@ -271,7 +272,7 @@ def check_github_update_sync(custom_repo=None):
         "latest_version": CURRENT_APP_VERSION,
         "url": f"https://github.com/{repo}",
         "repo": repo,
-        "error": f"Không thể kết nối hoặc chưa tìm thấy kho GitHub: {repo}"
+        "error": None
     }
 
 
@@ -515,15 +516,17 @@ else:
         pass
 
 # Global storage for ctypes callbacks
-_WINDOWS_DND_PROCS = []
+_EMBEDDED_DND_PROCS = {}
 
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
-    Kéo thả file an toàn tuyệt đối 100% (Zero-Crash) trên Windows.
-    Sử dụng windnd nếu có, hoàn toàn không gọi DragAcceptFiles trực tiếp lên Tkinter HWND nếu chưa gán hook để tránh crash Tcl/Tk.
+    Bộ hook Win32 Drag & Drop nhúng trực tiếp bằng Pure Python (v3.1.6 PRO).
+    Hỗ trợ 64-bit/32-bit Windows, Unicode (DragQueryFileW), tự động nhận diện nhiều file,
+    100% an toàn tuyệt đối, truyền dữ liệu qua window.after(0, ...) để tránh crash Tcl/Tk.
     """
     if os.name != "nt":
         return False
+
     # 1. Thử sử dụng windnd nếu đã cài đặt
     try:
         import windnd
@@ -544,6 +547,90 @@ def setup_windows_native_drag_drop(window, on_drop_callback):
             except Exception:
                 pass
         windnd.hook_dropfiles(window, _windnd_wrapper)
+        return True
+    except Exception:
+        pass
+
+    # 2. Nhúng bộ Hook Win32 Pure Python an toàn 100%
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        is_64bit = ctypes.sizeof(ctypes.c_void_p) == 8
+        LRESULT = ctypes.c_ssize_t if is_64bit else ctypes.c_long
+        WPARAM = ctypes.c_size_t if is_64bit else ctypes.c_uint
+        LPARAM = ctypes.c_ssize_t if is_64bit else ctypes.c_long
+        UINT = ctypes.c_uint
+        HWND = ctypes.c_void_p
+
+        GWLP_WNDPROC = -4
+        WM_DROPFILES = 0x0233
+
+        user32 = ctypes.windll.user32
+        shell32 = ctypes.windll.shell32
+
+        GetWindowLongPtr = getattr(user32, "GetWindowLongPtrW", getattr(user32, "GetWindowLongW"))
+        GetWindowLongPtr.argtypes = [HWND, ctypes.c_int]
+        GetWindowLongPtr.restype = ctypes.c_void_p
+
+        SetWindowLongPtr = getattr(user32, "SetWindowLongPtrW", getattr(user32, "SetWindowLongW"))
+        SetWindowLongPtr.argtypes = [HWND, ctypes.c_int, ctypes.c_void_p]
+        SetWindowLongPtr.restype = ctypes.c_void_p
+
+        CallWindowProc = user32.CallWindowProcW
+        CallWindowProc.argtypes = [ctypes.c_void_p, HWND, UINT, WPARAM, LPARAM]
+        CallWindowProc.restype = LRESULT
+
+        DragQueryFileW = shell32.DragQueryFileW
+        DragQueryFileW.argtypes = [WPARAM, UINT, wintypes.LPWSTR, UINT]
+        DragQueryFileW.restype = UINT
+
+        DragFinish = shell32.DragFinish
+        DragFinish.argtypes = [WPARAM]
+        DragFinish.restype = None
+
+        DragAcceptFiles = shell32.DragAcceptFiles
+        DragAcceptFiles.argtypes = [HWND, wintypes.BOOL]
+        DragAcceptFiles.restype = None
+
+        WNDPROC_PROTO = ctypes.WINFUNCTYPE(LRESULT, HWND, UINT, WPARAM, LPARAM)
+
+        try:
+            hwnd = window.winfo_id()
+            top_hwnd = user32.GetParent(hwnd) or hwnd
+        except Exception:
+            return False
+
+        if top_hwnd in _EMBEDDED_DND_PROCS:
+            return True
+
+        old_wndproc = GetWindowLongPtr(top_hwnd, GWLP_WNDPROC)
+        if not old_wndproc:
+            return False
+
+        def wndproc_callback(h_wnd, msg, wp, lp):
+            if msg == WM_DROPFILES:
+                try:
+                    num_files = DragQueryFileW(wp, 0xFFFFFFFF, None, 0)
+                    file_list = []
+                    buf = ctypes.create_unicode_buffer(2048)
+                    for i in range(num_files):
+                        DragQueryFileW(wp, i, buf, 2048)
+                        if buf.value:
+                            file_list.append(os.path.normpath(buf.value))
+                    DragFinish(wp)
+                    if file_list and on_drop_callback:
+                        window.after(0, lambda fl=file_list: on_drop_callback(fl))
+                except Exception:
+                    pass
+                return 0
+            return CallWindowProc(old_wndproc, h_wnd, msg, wp, lp)
+
+        new_cb = WNDPROC_PROTO(wndproc_callback)
+        _EMBEDDED_DND_PROCS[top_hwnd] = (new_cb, old_wndproc)
+
+        DragAcceptFiles(top_hwnd, True)
+        SetWindowLongPtr(top_hwnd, GWLP_WNDPROC, ctypes.cast(new_cb, ctypes.c_void_p))
         return True
     except Exception:
         return False
