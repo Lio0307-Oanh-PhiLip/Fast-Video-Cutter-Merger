@@ -6,7 +6,7 @@ title Fast Video Cutter and Merger Studio v3.1.6 - Test Suite
 cls
 
 echo ==============================================================
-echo    KIỂM TRA GHÉP VIDEO MẪU H.264 & H.265 (v3.1.6 PRO)
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO - TEST SUITE
 echo ==============================================================
 echo.
 

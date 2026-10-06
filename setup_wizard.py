@@ -336,6 +336,17 @@ class WindowsSetupWizard(tk.Tk):
                         if os.path.exists(src_f):
                             shutil.copy2(src_f, os.path.join(target, fname))
 
+                elif idx == 2:
+                    # Auto install dependencies for drag-and-drop & image processing
+                    try:
+                        flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+                        subprocess.run(
+                            [sys.executable, "-m", "pip", "install", "tkinterdnd2", "windnd", "pillow"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags, timeout=30
+                        )
+                    except Exception:
+                        pass
+
                 elif idx == 3:
                     if self.create_desktop_icon_var.get():
                         self.create_windows_shortcut(
