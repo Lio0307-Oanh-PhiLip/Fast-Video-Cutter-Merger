@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.9 - Setup Wizard
+title Fast Video Cutter and Merger Studio v3.2.0 - Setup Wizard
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.9 PRO
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.0 PRO
 echo    Windows Setup Wizard
 echo ==============================================================
 echo.

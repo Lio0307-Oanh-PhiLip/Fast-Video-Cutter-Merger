@@ -194,16 +194,32 @@ export const CutterTab: React.FC<CutterTabProps> = ({ currentOs, engineSettings 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Processing Timer & Completion Timestamp
+  const [procSeconds, setProcSeconds] = useState<number>(0);
+  const [procDoneTime, setProcDoneTime] = useState<{ durationStr: string; clockStr: string } | null>(null);
+
   // Simulate ultra-fast processing
   const handleRunCut = () => {
     setIsProcessing(true);
     setProcessProgress(0);
     setIsDone(false);
+    setProcSeconds(0);
+    setProcDoneTime(null);
+
+    const startTime = Date.now();
+    const liveTimer = setInterval(() => {
+      setProcSeconds((Date.now() - startTime) / 1000);
+    }, 100);
 
     const timer = setInterval(() => {
       setProcessProgress(prev => {
         if (prev >= 100) {
           clearInterval(timer);
+          clearInterval(liveTimer);
+          const totalSec = (Date.now() - startTime) / 1000;
+          const durStr = totalSec < 60 ? `${totalSec.toFixed(2)} giây` : `${Math.floor(totalSec / 60)} phút ${(totalSec % 60).toFixed(1)} giây`;
+          const clockStr = new Date().toLocaleTimeString('vi-VN');
+          setProcDoneTime({ durationStr: durStr, clockStr });
           setIsProcessing(false);
           setIsDone(true);
           return 100;
@@ -554,7 +570,12 @@ export const CutterTab: React.FC<CutterTabProps> = ({ currentOs, engineSettings 
               <div className="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between text-xs text-slate-300">
                   <span>Tiến trình Stream Copy:</span>
-                  <span className="font-mono font-bold text-emerald-400">{processProgress}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-indigo-300 font-bold bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-500/30">
+                      ⏱ {procSeconds.toFixed(1)}s
+                    </span>
+                    <span className="font-mono font-bold text-emerald-400">{processProgress}%</span>
+                  </div>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div
@@ -568,14 +589,18 @@ export const CutterTab: React.FC<CutterTabProps> = ({ currentOs, engineSettings 
               </div>
             )}
 
-            {isDone && (
-              <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/60 rounded-xl space-y-1.5 text-xs text-emerald-300">
-                <div className="flex items-center gap-2 font-bold">
+            {isDone && procDoneTime && (
+              <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/60 rounded-xl space-y-2 text-xs text-emerald-300">
+                <div className="flex items-center gap-2 font-bold text-sm text-emerald-400">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  Đã cắt xong trong 1.2 giây!
+                  <span>Đã cắt xong video hoàn hảo chuẩn Lossless!</span>
                 </div>
-                <div className="text-slate-300 text-[11px]">
-                  Dung lượng file kết quả ước tính: <strong>{formatBytes(estimatedOutputSize)}</strong> (Lossless)
+                <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-300 font-mono pt-1.5 border-t border-emerald-900/40">
+                  <span>⏱ Thời gian xử lý: <strong className="text-cyan-300">{procDoneTime.durationStr}</strong></span>
+                  <span>⏰ Thời điểm hoàn thành: <strong className="text-emerald-300">{procDoneTime.clockStr}</strong></span>
+                </div>
+                <div className="text-slate-400 text-[11px] pt-0.5">
+                  Dung lượng ước tính: <strong className="text-emerald-300">{formatBytes(estimatedOutputSize)}</strong> (Lossless Bitstream Copy)
                 </div>
               </div>
             )}

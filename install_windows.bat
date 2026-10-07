@@ -2,11 +2,11 @@
 setlocal EnableExtensions
 chcp 65001 >nul 2>&1
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.9 PRO Setup Wizard
+title Fast Video Cutter and Merger Studio v3.2.0 PRO Setup Wizard
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.9 PRO
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.0 PRO
 echo    Windows Setup Wizard
 echo ==============================================================
 echo.

@@ -535,11 +535,23 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Processing Timer & Completion Timestamp
+  const [procSeconds, setProcSeconds] = useState<number>(0);
+  const [procDoneTime, setProcDoneTime] = useState<{ durationStr: string; clockStr: string } | null>(null);
+
   const handleRunProcessing = () => {
     if (queue.length < 2) return;
     setIsProcessing(true);
     setProgress(0);
     setIsDone(false);
+    setProcSeconds(0);
+    setProcDoneTime(null);
+
+    const startTime = Date.now();
+    const liveTimer = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      setProcSeconds(elapsed);
+    }, 100);
 
     setCurrentStepText('Đang cắt lọc các phân đoạn theo mốc thời gian đã chọn...');
     const timer = setInterval(() => {
@@ -549,6 +561,11 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
         }
         if (prev >= 100) {
           clearInterval(timer);
+          clearInterval(liveTimer);
+          const totalSec = (Date.now() - startTime) / 1000;
+          const durStr = totalSec < 60 ? `${totalSec.toFixed(2)} giây` : `${Math.floor(totalSec / 60)} phút ${(totalSec % 60).toFixed(1)} giây`;
+          const clockStr = new Date().toLocaleTimeString('vi-VN');
+          setProcDoneTime({ durationStr: durStr, clockStr });
           setIsProcessing(false);
           setIsDone(true);
           setCurrentStepText('Hoàn tất cắt & ghép chủ động!');
@@ -1017,7 +1034,7 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
                           type="button"
                           onClick={() => moveToExtreme(index, 'top')}
                           disabled={index === 0}
-                          className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 disabled:opacity-20 rounded-md transition hidden sm:inline-block"
+                          className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 disabled:opacity-20 rounded-md transition"
                           title="Đưa lên đầu danh sách"
                         >
                           <ChevronsUp className="w-3.5 h-3.5" />
@@ -1028,7 +1045,7 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
                           type="button"
                           onClick={() => moveToExtreme(index, 'bottom')}
                           disabled={index === queue.length - 1}
-                          className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 disabled:opacity-20 rounded-md transition hidden sm:inline-block"
+                          className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 disabled:opacity-20 rounded-md transition"
                           title="Đưa xuống cuối danh sách"
                         >
                           <ChevronsDown className="w-3.5 h-3.5" />
@@ -1114,7 +1131,12 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
               <div className="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between text-xs text-slate-300">
                   <span>{currentStepText}</span>
-                  <span className="font-mono font-bold text-emerald-400">{progress}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">
+                      ⏱ {procSeconds.toFixed(1)}s
+                    </span>
+                    <span className="font-mono font-bold text-emerald-400">{progress}%</span>
+                  </div>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div
@@ -1125,10 +1147,16 @@ echo "Da hoan tat ghep noi thanh cong toan bo ${queue.length} video vao: ${outFi
               </div>
             )}
 
-            {isDone && (
-              <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-xs text-emerald-300 flex items-center gap-2 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Đã cắt bỏ các đoạn thừa và ghép nối thành công {queue.length} video theo đúng thứ tự! (Thời lượng: {formatTime(totalDuration)})</span>
+            {isDone && procDoneTime && (
+              <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-xs text-emerald-300 space-y-1">
+                <div className="flex items-center gap-2 font-bold text-sm text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Đã ghép thành công {queue.length} video chuẩn Lossless!</span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-300 font-mono pt-1 border-t border-emerald-900/40">
+                  <span>⏱ Thời gian xử lý: <strong className="text-cyan-300">{procDoneTime.durationStr}</strong></span>
+                  <span>⏰ Thời điểm hoàn thành: <strong className="text-emerald-300">{procDoneTime.clockStr}</strong></span>
+                </div>
               </div>
             )}
           </div>
