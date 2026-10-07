@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================
-# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.2.4 PRO
+# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.2.5 PRO
 # ==============================================================
 
 set -e

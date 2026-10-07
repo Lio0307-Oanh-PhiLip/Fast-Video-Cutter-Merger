@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Suite Fast Video Studio v3.2.4 PRO
+Test Suite Fast Video Studio v3.2.5 PRO
 1. Test Hardware Acceleration (GPU Auto-Detect & multi-thread CPU)
 2. Test Ultra-Fast Lossless Cut (Input Seek < 0.2s)
 3. Test Smart-Merge (H.264 + H.265 Reclocking & Zero Speed-up)

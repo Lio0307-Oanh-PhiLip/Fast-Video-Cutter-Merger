@@ -135,9 +135,9 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 # =====================================================================
-# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.4 PRO)
+# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.5 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.2.4"
+CURRENT_APP_VERSION = "v3.2.5"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -1686,7 +1686,7 @@ class VideoEditorApp(BaseAppWindow):
             super().__init__(className="fast-video-editor")
         except Exception:
             super().__init__()
-        self.title("Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)")
+        self.title("Fast Video Cutter & Merger Studio v3.2.5 PRO (Lossless Stream Copy)")
         self.geometry("1120x760")
         self.minsize(880, 580)
         self.configure(bg="#0f172a")
@@ -2156,7 +2156,7 @@ class VideoEditorApp(BaseAppWindow):
 
         title_lbl = tk.Label(
             header_frame, 
-            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.4 PRO", 
+            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.5 PRO", 
             font=("Segoe UI", 12, "bold"), 
             fg="#38bdf8", 
             bg="#1e293b"
@@ -3625,22 +3625,19 @@ class VideoEditorApp(BaseAppWindow):
         tk.Button(row_ff_btns, text="⚡ Tự Động Tải & Cài Đặt FFmpeg Ngay (1-Click)", bg="#0284c7", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.start_auto_download_ffmpeg).pack(side="left", padx=4)
         tk.Button(row_ff_btns, text="🔄 Kiểm Tra Lại", bg="#334155", fg="#ffffff", font=("Segoe UI", 9), relief="flat", command=self.refresh_ffmpeg_status).pack(side="left", padx=4)
 
-        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.4 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
+        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.5 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
         box_info.pack(fill="both", expand=True, pady=8)
 
         desc = (
-            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.4 PRO\n"
+            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.5 PRO\n"
             "• Chế độ xử lý: Lossless Stream Copy (Tốc độ tối đa ~1-3s, không làm nóng CPU/GPU)\n"
-            "• Tính năng nâng cấp mới v3.2.4:\n"
-            "   + Tối ưu hóa 100% Động Cơ Tự Động Cập Nhật GitHub cho cả Windows (.exe) và Linux (.deb/.sh)\n"
-            "   + Hộp thoại tự động cập nhật hiển thị gọn gàng % tiến độ thời gian thực (Large Percentage Bar)\n"
-            "   + Nâng cấp tính năng Kéo & Thả Video hoàn hảo trên Linux (Nautilus, Dolphin, Thunar)\n"
-            "   + Tự động hóa quy trình Build .exe & Tự động đẩy Releases qua GitHub Actions CI/CD\n"
-            "   + Tích hợp Động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp không bị khóa file\n"
-            "   + Khắc phục triệt để lỗi che khuất văn bản thông tin phiên bản ở cửa sổ thu nhỏ\n"
+            "• Tính năng nâng cấp mới v3.2.5 PRO:\n"
+            "   + Tự động cập nhật 1-click trực tiếp từ GitHub với cửa sổ hiển thị % tiến độ thời gian thực\n"
+            "   + Nâng cấp hoàn hảo tính năng Kéo & Thả Video trên Linux (Nautilus, Dolphin, Thunar, Nemo)\n"
+            "   + Tự động kích hoạt cửa sổ cập nhật Desktop với phản hồi % tức thì cho ca Win & Linux\n"
+            "   + Đã tối ưu hóa giao diện cấu hình gọn sạch, loại bỏ hoàn toàn các khung thừa\n"
             "   + Hộp thoại lưu file (Save As) mở đúng 1 lần duy nhất, hủy bỏ an toàn không văng lỗi\n"
-            "   + Tích hợp Crash Logger ghi nhận file crash_log.txt để không bao giờ tự đóng âm thầm\n"
-            "   + MPEG-TS Lossless Concat: Đảm bảo nối nguyên vẹn mọi video không lệch tiếng."
+            "   + Tích hợp Crash Logger ghi nhận file crash_log.txt bảo vệ ứng dụng 100%."
         )
 
         txt_info = tk.Text(box_info, height=7, bg="#0f172a", fg="#e2e8f0", font=("Segoe UI", 9), wrap="word", relief="flat", bd=0)

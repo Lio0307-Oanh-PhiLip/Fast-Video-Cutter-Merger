@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.4 PRO - Windows Setup Wizard
+  Fast Video Cutter & Merger Studio v3.2.5 PRO - Windows Setup Wizard
   Trình cài đặt dạng Next-Next-Install-Finish đầy đủ chuẩn Windows 10 / 11
 =============================================================================
 """
@@ -63,7 +63,7 @@ class WindowsSetupWizard(tk.Tk):
 
         self.lbl_title = tk.Label(
             self.header_frame, 
-            text="⚡ Trình Hướng Dẫn Cài Đặt Fast Video Cutter & Merger v3.2.4 PRO", 
+            text="⚡ Trình Hướng Dẫn Cài Đặt Fast Video Cutter & Merger v3.2.5 PRO", 
             font=("Segoe UI", 11, "bold"), 
             fg="#38bdf8", bg="#1e293b"
         )
@@ -266,7 +266,7 @@ class WindowsSetupWizard(tk.Tk):
         start_str = "Có" if self.create_start_menu_var.get() else "Không"
         tk.Label(box_sum, text=f"• Start Menu Shortcut: {start_str}", font=("Segoe UI", 9), fg="#cbd5e1", bg="#1e293b", anchor="w").pack(fill="x", pady=2)
 
-        tk.Label(box_sum, text="• Động cơ xử lý: FFmpeg Lossless Stream Copy + Smart-Merge v3.2.4 PRO", font=("Segoe UI", 9), fg="#10b981", bg="#1e293b", anchor="w").pack(fill="x", pady=2)
+        tk.Label(box_sum, text="• Động cơ xử lý: FFmpeg Lossless Stream Copy + Smart-Merge v3.2.5 PRO", font=("Segoe UI", 9), fg="#10b981", bg="#1e293b", anchor="w").pack(fill="x", pady=2)
 
     # STEP 5: INSTALLING (PROGRESS)
     def show_step_5_installing(self):
@@ -277,7 +277,7 @@ class WindowsSetupWizard(tk.Tk):
 
         tk.Label(
             self.body_frame, 
-            text="Đang Cài Đặt Fast Video Cutter & Merger Studio v3.2.4 PRO...", 
+            text="Đang Cài Đặt Fast Video Cutter & Merger Studio v3.2.5 PRO...", 
             font=("Segoe UI", 11, "bold"), 
             fg="#38bdf8", bg="#0f172a"
         ).pack(anchor="w", pady=(0, 10))
@@ -388,13 +388,13 @@ class WindowsSetupWizard(tk.Tk):
 
         tk.Label(
             self.body_frame, 
-            text="✅ Cài Đặt Thành Công Hoàn Toàn (v3.2.4 PRO)!", 
+            text="✅ Cài Đặt Thành Công Hoàn Toàn (v3.2.5 PRO)!", 
             font=("Segoe UI", 12, "bold"), 
             fg="#10b981", bg="#0f172a"
         ).pack(anchor="w", pady=(0, 8))
 
         desc = (
-            "Fast Video Cutter & Merger Studio v3.2.4 PRO đã được cài đặt thành công vào máy tính của bạn.\n\n"
+            "Fast Video Cutter & Merger Studio v3.2.5 PRO đã được cài đặt thành công vào máy tính của bạn.\n\n"
             "Bạn có thể mở ứng dụng bất cứ lúc nào từ biểu tượng ngoài Desktop hoặc Start Menu."
         )
         tk.Label(self.body_frame, text=desc, font=("Segoe UI", 9), fg="#cbd5e1", bg="#0f172a", justify="left").pack(anchor="w", pady=(0, 12))
