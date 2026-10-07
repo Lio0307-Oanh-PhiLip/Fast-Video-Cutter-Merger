@@ -145,7 +145,7 @@ sys.excepthook = handle_uncaught_exception
 # =====================================================================
 # BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.0 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.2.0"
+CURRENT_APP_VERSION = "v3.2.1"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -3486,24 +3486,34 @@ class VideoEditorApp(BaseAppWindow):
         self.lbl_update_status_detail = tk.Label(box_update, text=f"• Hiện tại: {CURRENT_APP_VERSION} PRO | Kho lưu trữ cấu hình: {saved_repo}", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a")
         self.lbl_update_status_detail.pack(anchor="w", pady=(2, 0))
 
-        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.0 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=16, pady=12)
-        box_info.pack(fill="x", pady=12)
+        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.1 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
+        box_info.pack(fill="both", expand=True, pady=8)
 
         desc = (
-            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.0 PRO\n"
+            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.1 PRO\n"
             "• Chế độ xử lý: Lossless Stream Copy (Tốc độ tối đa ~1-3s, không làm nóng CPU/GPU)\n"
-            "• Tính năng nâng cấp v3.2.0:\n"
+            "• Tính năng nâng cấp mới v3.2.1:\n"
+            "   + Tự động hóa 100% quy trình Build .exe & Tự động đẩy Releases qua GitHub Actions CI/CD\n"
+            "   + Tích hợp Động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp ngay trên giao diện Desktop\n"
+            "   + Khắc phục triệt để lỗi che khuất văn bản thông tin phiên bản ở cửa sổ thu nhỏ\n"
+            "   + Khung hiển thị chi tiết nhật ký phát hành với thanh cuộn tự động (ScrolledText) không sợ tràn chữ\n"
             "   + Khắc phục triệt để lỗi lặp lại hộp thoại cài đặt / lưu liên tục khi phát hoặc cắt\n"
-            "   + Cơ chế Auto-Installer FFmpeg đa tầng cực mạnh (urllib SSL-Bypass + curl + PowerShell + winget)\n"
-            "   + Tự động kích hoạt ngay sau khi cài xong, không hỏi lại hay lặp vòng lặp\n"
-            "   + Khi bấm [No] từ chối cài đặt, hệ thống dừng an toàn và thông báo nhẹ nhàng\n"
+            "   + Cơ chế Auto-Installer FFmpeg đa tầng (urllib SSL-Bypass + curl + PowerShell + winget)\n"
             "   + Hộp thoại lưu file (Save As) chỉ mở đúng 1 lần duy nhất, hủy bỏ an toàn không văng lỗi\n"
             "   + Tích hợp Crash Logger ghi nhận file crash_log.txt để không bao giờ tự đóng âm thầm\n"
             "   + Kéo thả video vào khung Cắt hoặc khung Ghép (hỗ trợ nhiều file cùng lúc qua windnd)\n"
             "   + Timeline tương tác trực tiếp với chuột cho cả Cắt và Ghép phân đoạn\n"
             "   + MPEG-TS Lossless Concat: Đảm bảo nối nguyên vẹn mọi video không lệch tiếng."
         )
-        tk.Label(box_info, text=desc, font=("Segoe UI", 9), fg="#e2e8f0", bg="#0f172a", justify="left").pack(anchor="w")
+
+        txt_info = tk.Text(box_info, height=7, bg="#0f172a", fg="#e2e8f0", font=("Segoe UI", 9), wrap="word", relief="flat", bd=0)
+        scroll_info = tk.Scrollbar(box_info, orient="vertical", command=txt_info.yview)
+        txt_info.config(yscrollcommand=scroll_info.set)
+
+        scroll_info.pack(side="right", fill="y")
+        txt_info.pack(side="left", fill="both", expand=True)
+        txt_info.insert("1.0", desc)
+        txt_info.config(state="disabled")
 
         self.refresh_ffmpeg_status()
 

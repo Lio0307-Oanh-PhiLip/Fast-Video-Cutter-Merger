@@ -1,0 +1,109 @@
+name: Automated Build & GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows Executable & Installer (.exe)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Build Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pillow tkinterdnd2 requests
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onedir --windowed --icon=icon.ico --name FastVideoEditor fast_video_editor.py
+          if (Test-Path "icon.ico") { copy icon.ico dist\FastVideoEditor\ }
+          copy fast_video_editor.py dist\FastVideoEditor\
+          copy setup_wizard.py dist\FastVideoEditor\
+          copy run_windows.bat dist\FastVideoEditor\
+
+      - name: Install Inno Setup and Compile Installer
+        run: |
+          choco install innosetup -y
+          if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer_windows.iss
+          }
+        continue-on-error: true
+
+      - name: Archive Portable Zip
+        run: |
+          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.1-Windows-Portable.zip -Force
+
+      - name: Prepare Windows Release Binaries
+        run: |
+          mkdir build_assets
+          if (Test-Path "Output\FastVideoEditor_Setup.exe") { Copy-Item "Output\FastVideoEditor_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
+          if (Test-Path "Output\FastVideoEditor_v3.2.0_Setup.exe") { Copy-Item "Output\FastVideoEditor_v3.2.0_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
+          if (Test-Path "Output\FastVideoEditor_v3.2.1_Setup.exe") { Copy-Item "Output\FastVideoEditor_v3.2.1_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
+          Copy-Item "FastVideoEditor-v3.2.1-Windows-Portable.zip" "build_assets\"
+          Copy-Item "fast_video_editor.py" "build_assets\"
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: build_assets/*
+
+  release:
+    name: Auto Publish to GitHub Releases
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: release_files
+
+      - name: Determine Tag Name
+        id: get_version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          else
+            TAG_NAME="v3.2.1"
+          fi
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
+          name: "Fast Video Cutter & Merger Studio ${{ steps.get_version.outputs.TAG_NAME }} PRO"
+          body: |
+            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.1 PRO)**
+            
+            ### 📌 Thông tin bản cập nhật ${{ steps.get_version.outputs.TAG_NAME }} PRO:
+            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.1-Setup.exe`)
+            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.1-Windows-Portable.zip`)
+            - 🔄 Cập nhật động cơ Auto-Update 1-Click nâng cấp ứng dụng ngay trong giao diện Desktop
+            - 🎯 Khắc phục 100% tràn chữ/che khuất thông tin phiên bản ở cửa sổ thu nhỏ
+          files: release_files/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
