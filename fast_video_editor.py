@@ -483,6 +483,16 @@ class AppUpdateDialog(tk.Toplevel):
                 except Exception:
                     pass
 
+            # Tự động tải thêm fast_video_editor.py trực tiếp từ raw GitHub để đảm bảo luôn ghi đè thành công
+            raw_script_path = os.path.join(save_dir, "fast_video_editor_new.py")
+            try:
+                raw_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
+                req_raw = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
+                with urllib.request.urlopen(req_raw, timeout=20, context=ctx) as r_raw, open(raw_script_path, "wb") as f_raw:
+                    f_raw.write(r_raw.read())
+            except Exception:
+                pass
+
             if not download_success or not os.path.exists(dest_path):
                 self.update_ui("❌ Không thể tải file cập nhật. Vui lòng kiểm tra kết nối mạng.", 0)
                 messagebox.showerror("Lỗi Cập Nhật", "Không thể tải file nâng cấp từ GitHub.\nVui lòng kiểm tra kết nối mạng hoặc thử lại sau.")
@@ -505,7 +515,7 @@ class AppUpdateDialog(tk.Toplevel):
             target_script = os.path.join(app_dir, "fast_video_editor.py")
 
             if os.name == "nt":
-                # Tạo file kịch bản batch nâng cấp độc lập (Detached Batch Updater) để KHÔNG BAO GIỜ bị khóa file đang chạy
+                # Tạo file kịch bản batch nâng cấp độc lập (Detached Batch Updater)
                 updater_bat = os.path.join(save_dir, "apply_update.bat")
                 target_exe = os.path.join(app_dir, "FastVideoEditor.exe")
                 python_exe = sys.executable
@@ -514,13 +524,21 @@ class AppUpdateDialog(tk.Toplevel):
 title Fast Video Editor v3.2.2 - Automatic Installer
 echo [INFO] Dang cho ung dung cu thoat an toan...
 timeout /t 2 /nobreak > nul
+
+REM 1. Ghi de truc tiep fast_video_editor.py vao thu muc app_dir ({app_dir})
+if exist "{raw_script_path}" (
+    echo [INFO] Cap nhat truc tiep fast_video_editor.py...
+    copy /y "{raw_script_path}" "{target_script}"
+)
 """
                 if dest_path.lower().endswith(".exe"):
-                    bat_content += f"""echo [INFO] Dang khoi chay trinh cai dat v3.2.2...
-start "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP-
-timeout /t 3 /nobreak > nul
+                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.2 vao thu muc {app_dir}...
+start /wait "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR="{app_dir}"
+timeout /t 2 /nobreak > nul
 if exist "{target_exe}" (
     start "" "{target_exe}"
+) else (
+    start "" "{python_exe}" "{target_script}"
 )
 exit /b 0
 """
@@ -535,9 +553,11 @@ if exist "{target_exe}" (
 exit /b 0
 """
                 else:
-                    bat_content += f"""echo [INFO] Dang cap nhat fast_video_editor.py...
-copy /y "{dest_path}" "{target_script}"
-start "" "{python_exe}" "{target_script}"
+                    bat_content += f"""if exist "{target_exe}" (
+    start "" "{target_exe}"
+) else (
+    start "" "{python_exe}" "{target_script}"
+)
 exit /b 0
 """
 
@@ -1683,10 +1703,10 @@ class VideoEditorApp(BaseAppWindow):
         self.tab_convert = tk.Frame(self.notebook, bg="#0f172a")
         self.tab_settings = tk.Frame(self.notebook, bg="#0f172a")
 
-        self.notebook.add(self.tab_cut, text="  ✂️ Cắt Video Siêu Tốc (Stream Copy)  ")
-        self.notebook.add(self.tab_merge, text="  🎬 Ghép Video Nâng Cao (Lossless Smart-Merge)  ")
-        self.notebook.add(self.tab_convert, text="  🔄 Chuyển Đuôi & Tách Âm Thanh (Fast Remux/Audio)  ")
-        self.notebook.add(self.tab_settings, text="  ⚙️ Cấu Hình & Công Cụ FFmpeg  ")
+        self.notebook.add(self.tab_cut, text=" ✂️ Cắt Video (Stream Copy) ")
+        self.notebook.add(self.tab_merge, text=" 🎬 Ghép Video (Smart-Merge) ")
+        self.notebook.add(self.tab_convert, text=" 🔄 Chuyển Đuôi & Âm Thanh ")
+        self.notebook.add(self.tab_settings, text=" ⚙️ Cấu Hình & FFmpeg ")
 
         self.setup_cut_tab()
         self.setup_merge_tab()
@@ -2154,7 +2174,7 @@ class VideoEditorApp(BaseAppWindow):
 
         self.style.configure(".", background=bg, foreground="#f8fafc", font=("Segoe UI", 9))
         self.style.configure("TNotebook", background=bg, borderwidth=0)
-        self.style.configure("TNotebook.Tab", background=card_bg, foreground="#94a3b8", padding=[14, 6], font=("Segoe UI", 10, "bold"))
+        self.style.configure("TNotebook.Tab", background=card_bg, foreground="#94a3b8", padding=[8, 5], font=("Segoe UI", 9, "bold"))
         self.style.map("TNotebook.Tab", background=[("selected", "#0284c7")], foreground=[("selected", "#ffffff")])
         self.style.configure("Horizontal.TProgressbar", troughcolor="#1e293b", background="#10b981", thickness=8)
         self.style.configure("TEntry", fieldbackground="#1e293b", foreground="#ffffff", insertcolor="#ffffff")
