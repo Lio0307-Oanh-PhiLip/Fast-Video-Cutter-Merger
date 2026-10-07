@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.3 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)
   Đồng bộ Logo biểu tượng & Taskbar Icon chuyên nghiệp cho cả Windows & Linux
   Hỗ trợ Kéo & Thả Video 100% Hoàn Hảo (Linux Nautilus/Dolphin & Windows Explorer)
 =============================================================================
@@ -16,24 +16,16 @@ APP_ICON_B64 = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAAAAAAA
 
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.3 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)
   Hỗ trợ cả Windows 10/11 & Linux (Ubuntu, Debian, Fedora, Arch...)
   Nguyên lý: Stream Copy với FFmpeg (Không re-encode, tốc độ ghi đĩa thực tế)
-  Nâng cấp v3.2.3 PRO:
+  Nâng cấp v3.2.4 PRO:
+    - Tối ưu hóa 100% Động Cơ Tự Động Cập Nhật GitHub cho cả Windows (.exe) và Linux (.deb/.sh)
+    - Hộp thoại tự động cập nhật hiển thị gọn gàng % tiến độ thời gian thực (Large Percentage Bar)
+    - Nâng cấp tính năng Kéo & Thả Video hoàn hảo trên Linux (Nautilus, Dolphin, Thunar)
     - Khắc phục triệt để lỗi lặp lại hộp thoại cài đặt / lưu liên tục khi phát hoặc cắt
-    - Cơ chế Auto-Installer FFmpeg đa tầng cực mạnh (urllib SSL-Bypass + curl + PowerShell + winget)
-    - Tự động kích hoạt ngay sau khi cài xong, không hỏi lại hay lặp vòng lặp
-    - Khi người dùng bấm [No] từ chối cài, hệ thống dừng tác vụ an toàn và thông báo nhẹ nhàng
     - Hộp thoại lưu file (Save As) chỉ mở đúng 1 lần duy nhất, hủy bỏ an toàn không văng lỗi
-    - Tối ưu bộ tìm kiếm binary: hỗ trợ tìm kiếm đa tầng tuyệt đối, khắc phục lỗi quyền trên Windows
-    - Sửa lỗi crash tự đóng cửa sổ khi khởi chạy (loại bỏ hook ctypes không an toàn)
     - Tích hợp Crash Logger ghi nhận file crash_log.txt để không bao giờ tự đóng âm thầm
-    - Kéo thả video vào khung Cắt hoặc khung Ghép (hỗ trợ nhiều file cùng lúc qua windnd)
-    - Bảo vệ toàn bộ luồng gọi FFmpeg, không bao giờ văng WinError 2
-    - Kéo chuột trực tiếp trên Timeline để chọn đoạn cắt [IN -> OUT] từ video thứ 2 trở đi
-    - Hoán đổi thứ tự video trực quan (Lên, Xuống, Đầu, Cuối, Đảo ngược)
-    - Concat MPEG-TS Lossless chống ngắt giữa chừng, đảm bảo nối toàn vẹn mọi video
-    - Tự động chuẩn hóa âm thanh camera CCTV (pcm_mulaw/pcm_alaw sang AAC)
 =============================================================================
 """
 
@@ -62,10 +54,10 @@ except ImportError:
             pass
     else:
         try:
-            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.3", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
+            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.4", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
         except Exception:
             try:
-                subprocess.run(["notify-send", "Fast Video Editor v3.2.3", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
+                subprocess.run(["notify-send", "Fast Video Editor v3.2.4", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
             except Exception:
                 pass
     print(f"[ERROR] {err_txt}")
@@ -124,7 +116,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
     print(f"[CRASH_LOG] {err_str}", file=sys.stderr)
     try:
         messagebox.showerror(
-            "Lỗi Ứng Dụng (v3.2.3 PRO)", 
+            "Lỗi Ứng Dụng (v3.2.4 PRO)", 
             f"Đã phát hiện lỗi thực thi:\n\n{str(exc_value)}\n\nChi tiết xem tại file 'crash_log.txt'."
         )
     except Exception:
@@ -134,7 +126,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Đã phát hiện sự cố khởi chạy ứng dụng:\n\n{str(exc_value)}\n\nChi tiết đã ghi vào file crash_log.txt", 
-                    "Sự Cố Fast Video Editor v3.2.3", 
+                    "Sự Cố Fast Video Editor v3.2.4", 
                     0x10
                 )
             except Exception:
@@ -143,9 +135,9 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 # =====================================================================
-# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.3 PRO)
+# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.4 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.2.3"
+CURRENT_APP_VERSION = "v3.2.4"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -188,7 +180,7 @@ def parse_version_tuple(v_str):
         return (0, 0, 0)
 
 def check_github_update_sync(custom_repo=None, force_check=False):
-    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.2.3 PRO)"""
+    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.2.4 PRO)"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -224,13 +216,13 @@ def check_github_update_sync(custom_repo=None, force_check=False):
                         v_local = parse_version_tuple(CURRENT_APP_VERSION)
 
                         is_newer = (v_remote > v_local)
-                        is_new_release = bool(rel_id) and bool(last_known_rel_id) and (rel_id != last_known_rel_id)
+                        is_new_release = bool(rel_id) and bool(last_known_rel_id) and (rel_id != last_known_rel_id) and is_newer
 
-                        if bool(rel_id) and not last_known_rel_id:
+                        if bool(rel_id) and not last_known_rel_id and is_newer:
                             saved_cfg["last_seen_release_id"] = rel_id
                             save_app_config(saved_cfg)
 
-                        has_up = is_newer or is_new_release or force_check
+                        has_up = is_newer or is_new_release
 
                         if has_up:
                             return {
@@ -244,6 +236,14 @@ def check_github_update_sync(custom_repo=None, force_check=False):
                                 "source": "releases",
                                 "release_id": rel_id,
                                 "is_newer": is_newer
+                            }
+                        elif not force_check:
+                            return {
+                                "has_update": False,
+                                "latest_version": tag_name or CURRENT_APP_VERSION,
+                                "url": html_url,
+                                "repo": repo,
+                                "error": None
                             }
         except Exception:
             pass
@@ -277,14 +277,14 @@ def check_github_update_sync(custom_repo=None, force_check=False):
                     v_local = parse_version_tuple(CURRENT_APP_VERSION)
 
                     is_newer_ver = (v_remote > v_local)
-                    is_new_commit = bool(sha) and bool(last_known_sha) and (sha != last_known_sha and full_sha != last_known_sha)
+                    is_new_commit = bool(sha) and bool(last_known_sha) and (sha != last_known_sha and full_sha != last_known_sha) and is_newer_ver
 
-                    if bool(sha) and not last_known_sha:
+                    if bool(sha) and not last_known_sha and is_newer_ver:
                         saved_cfg["last_seen_sha"] = sha
                         save_app_config(saved_cfg)
 
-                    has_up = is_newer_ver or is_new_commit or force_check
-                    ver_text = remote_v if is_newer_ver else f"{CURRENT_APP_VERSION} (Commit @ {sha})"
+                    has_up = is_newer_ver or is_new_commit
+                    ver_text = remote_v if is_newer_ver else CURRENT_APP_VERSION
                     notes_text = f"• Cập nhật: {commit_msg}\n• Ngày đẩy mã: {author_date}\n• Mã Commit: {sha}\n• Nhánh: {branch}"
 
                     return {
@@ -312,15 +312,15 @@ def check_github_update_sync(custom_repo=None, force_check=False):
 
 
 class AppUpdateDialog(tk.Toplevel):
-    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click (v3.2.3 PRO)"""
+    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click gọn gàng, hiển thị % tiến độ (v3.2.4 PRO)"""
     def __init__(self, parent, update_info):
         super().__init__(parent)
         self.parent = parent
         self.update_info = update_info
         ver = update_info.get("latest_version", "Mới")
         self.title(f"⚡ Cập Nhật Fast Video Editor - {ver}")
-        self.geometry("560x440")
-        self.minsize(520, 400)
+        self.geometry("520x260")
+        self.minsize(480, 240)
         self.configure(bg="#0f172a")
         self.transient(parent)
         self.grab_set()
@@ -347,37 +347,27 @@ class AppUpdateDialog(tk.Toplevel):
             font=("Segoe UI", 9), fg="#cbd5e1", bg="#1e1b4b"
         ).pack(anchor="w", pady=(2, 0))
 
-        # Body
-        body = tk.Frame(self, bg="#0f172a", padx=16, pady=12)
+        # Body - Tối giản gọn gàng, tập trung hiển thị % tiến độ cập nhật
+        body = tk.Frame(self, bg="#0f172a", padx=20, pady=16)
         body.pack(fill="both", expand=True)
 
-        tk.Label(
-            body, text="Thông tin tính năng & nâng cấp mới:", 
-            font=("Segoe UI", 9, "bold"), fg="#38bdf8", bg="#0f172a"
-        ).pack(anchor="w")
-
-        self.txt_notes = tk.Text(body, bg="#1e293b", fg="#e2e8f0", font=("Consolas", 8), height=8, relief="flat", padx=8, pady=8)
-        self.txt_notes.pack(fill="both", expand=True, pady=6)
-        notes = (update_info.get("notes") or "").strip() or ("• Tối ưu hiệu năng xử lý Lossless\n"
-                                                              "• Nâng cấp kéo thả video siêu tốc\n"
-                                                              "• Cập nhật bản cài đặt tự động 1-click.")
-        self.txt_notes.insert("1.0", notes)
-        self.txt_notes.config(state="disabled")
-
-        # Progress Frame
-        self.progress_frame = tk.Frame(body, bg="#0f172a")
-        self.lbl_status = tk.Label(
-            self.progress_frame, text="Sẵn sàng tải bản cập nhật tự động...", 
-            font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a"
+        self.lbl_percent_big = tk.Label(
+            body, text="0%", 
+            font=("Segoe UI", 24, "bold"), fg="#38bdf8", bg="#0f172a"
         )
-        self.lbl_status.pack(anchor="w")
+        self.lbl_percent_big.pack(anchor="center", pady=(0, 2))
 
-        self.progress_bar = ttk.Progressbar(self.progress_frame, mode="determinate")
-        self.progress_bar.pack(fill="x", pady=(2, 4))
-        self.progress_frame.pack(fill="x", pady=(2, 6))
+        self.lbl_status = tk.Label(
+            body, text="Sẵn sàng tải bản cập nhật tự động 1-click...", 
+            font=("Segoe UI", 9), fg="#94a3b8", bg="#0f172a", justify="center"
+        )
+        self.lbl_status.pack(anchor="center", pady=(0, 8))
+
+        self.progress_bar = ttk.Progressbar(body, mode="determinate")
+        self.progress_bar.pack(fill="x", pady=4)
 
         # Footer Buttons
-        footer = tk.Frame(self, bg="#1e293b", padx=16, pady=10)
+        footer = tk.Frame(self, bg="#1e293b", padx=16, pady=12)
         footer.pack(fill="x", side="bottom")
 
         self.btn_close = tk.Button(
@@ -409,6 +399,7 @@ class AppUpdateDialog(tk.Toplevel):
         def _apply():
             self.lbl_status.config(text=status)
             self.progress_bar["value"] = percent
+            self.lbl_percent_big.config(text=f"{percent}%")
         self.after(0, _apply)
 
     def start_auto_download(self):
@@ -518,7 +509,7 @@ class AppUpdateDialog(tk.Toplevel):
             self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp tự động...", 95)
             time.sleep(0.5)
 
-            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.3 PRO)
+            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.4 PRO)
             sha = self.update_info.get("sha")
             if sha:
                 try:
@@ -538,7 +529,7 @@ class AppUpdateDialog(tk.Toplevel):
                 python_exe = sys.executable
 
                 bat_content = f"""@echo off
-title Fast Video Editor v3.2.3 - Automatic Installer
+title Fast Video Editor v3.2.4 - Automatic Installer
 echo [INFO] Dang cho ung dung cu thoat an toan...
 timeout /t 2 /nobreak > nul
 
@@ -549,7 +540,7 @@ if exist "{raw_script_path}" (
 )
 """
                 if dest_path.lower().endswith(".exe"):
-                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.3 vao thu muc {app_dir}...
+                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.4 vao thu muc {app_dir}...
 start /wait "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR="{app_dir}"
 timeout /t 2 /nobreak > nul
 if exist "{target_exe}" (
@@ -603,7 +594,7 @@ exit /b 0
                 script_p = os.path.abspath(sys.argv[0])
 
                 sh_content = f"""#!/usr/bin/env bash
-# Fast Video Editor Auto-Updater for Linux (v3.2.3 PRO)
+# Fast Video Editor Auto-Updater for Linux (v3.2.4 PRO)
 sleep 1
 
 # 1. Ghi de file ma nguon fast_video_editor.py vao app_dir ({app_dir})
@@ -687,8 +678,8 @@ if os.name == "nt":
 
 class BaseAppWindow(tk.Tk):
     """
-    Cửa sổ gốc Tkinter an toàn tuyệt đối 100% (Zero-Crash v3.2.3).
-    Tự động khởi tạo TkinterDnD nếu khả dụng; nếu thiếu hoặc lỗi thư viện Tcl sẽ tự động fallback về tk.Tk chuẩn mà KHÔNG BAO GIỜ bị crash.
+    Cửa sổ gốc Tkinter an toàn tuyệt đối 100% (Zero-Crash v3.2.4).
+    Tự động khởi tạo TkinterDnD nếu khả dụng; hỗ trợ Tcl tkdnd fallback trên Linux (Nautilus, Dolphin, Thunar).
     """
     def __init__(self, *args, **kwargs):
         global HAS_TKDND
@@ -702,6 +693,12 @@ class BaseAppWindow(tk.Tk):
                 HAS_TKDND = False
                 self.dnd_supported = False
         super().__init__(*args, **kwargs)
+        # Thử Tcl package require tkdnd trực tiếp trên Linux
+        try:
+            self.tk.call('package', 'require', 'tkdnd')
+            self.dnd_supported = True
+        except Exception:
+            pass
 
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
@@ -1358,7 +1355,7 @@ class DraggableTimeline(tk.Canvas):
 class FFmpegDownloadDialog(tk.Toplevel):
     def __init__(self, parent, on_success_callback=None):
         super().__init__(parent)
-        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.3")
+        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.4")
         self.geometry("540x260")
         self.resizable(False, False)
         self.configure(bg="#0f172a")
@@ -1387,7 +1384,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
         hdr.pack(fill="x")
         tk.Label(
             hdr, 
-            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.3 PRO)", 
+            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.4 PRO)", 
             font=("Segoe UI", 11, "bold"), 
             fg="#ffffff", 
             bg="#1e293b"
@@ -1643,7 +1640,7 @@ class VideoEditorApp(BaseAppWindow):
             super().__init__(className="fast-video-editor")
         except Exception:
             super().__init__()
-        self.title("Fast Video Cutter & Merger Studio v3.2.3 PRO (Lossless Stream Copy)")
+        self.title("Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)")
         self.geometry("1120x760")
         self.minsize(880, 580)
         self.configure(bg="#0f172a")
@@ -2147,7 +2144,7 @@ class VideoEditorApp(BaseAppWindow):
 
         title_lbl = tk.Label(
             header_frame, 
-            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.3 PRO", 
+            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.4 PRO", 
             font=("Segoe UI", 12, "bold"), 
             fg="#38bdf8", 
             bg="#1e293b"
@@ -2332,7 +2329,7 @@ class VideoEditorApp(BaseAppWindow):
             except Exception as e:
                 print(f"[NATIVE_DND_INIT_ERR] {e}", file=sys.stderr)
 
-        # 2. Đăng ký TkinterDnD2 nếu hỗ trợ (Linux X11/Wayland và Windows OLE)
+        # 2. Đăng ký TkinterDnD2 nếu hỗ trợ (Linux X11/Wayland Nautilus/Dolphin và Windows OLE)
         if getattr(self, "dnd_supported", False) or HAS_TKDND:
             def make_dnd_handler(target_action):
                 def _handler(event):
@@ -2366,10 +2363,18 @@ class VideoEditorApp(BaseAppWindow):
                 if w is not None:
                     try:
                         if hasattr(w, "drop_target_register"):
-                            w.drop_target_register(DND_FILES)
+                            try:
+                                w.drop_target_register("*")
+                            except Exception:
+                                try:
+                                    w.drop_target_register(DND_FILES, DND_ALL, "text/uri-list", "text/plain")
+                                except Exception:
+                                    w.drop_target_register(DND_FILES)
                             h = make_dnd_handler(action)
                             w.dnd_bind("<<Drop>>", h)
                             w.dnd_bind("<<Drop:DND_Files>>", h)
+                            w.dnd_bind("<<Drop:DND_Text>>", h)
+                            w.dnd_bind("<<Drop:*>>", h)
                     except Exception:
                         pass
 
@@ -2911,7 +2916,7 @@ class VideoEditorApp(BaseAppWindow):
         self.merge_smart_codec_var = tk.BooleanVar(value=True)
         chk_m_smart = tk.Checkbutton(
             m_opts, 
-            text="⚡ Smart-Merge v3.2.3: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
+            text="⚡ Smart-Merge v3.2.4: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
             variable=self.merge_smart_codec_var, 
             bg="#0f172a", fg="#38bdf8", selectcolor="#1e293b", activebackground="#0f172a",
             font=("Segoe UI", 9, "bold")
@@ -3599,23 +3604,21 @@ class VideoEditorApp(BaseAppWindow):
         self.lbl_update_status_detail = tk.Label(box_update, text=f"• Hiện tại: {CURRENT_APP_VERSION} PRO | Kho lưu trữ cấu hình: {saved_repo}", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a")
         self.lbl_update_status_detail.pack(anchor="w", pady=(2, 0))
 
-        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.3 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
+        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.4 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
         box_info.pack(fill="both", expand=True, pady=8)
 
         desc = (
-            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.3 PRO\n"
+            "• Phiên bản: Fast Video Cutter & Merger Studio v3.2.4 PRO\n"
             "• Chế độ xử lý: Lossless Stream Copy (Tốc độ tối đa ~1-3s, không làm nóng CPU/GPU)\n"
-            "• Tính năng nâng cấp mới v3.2.3:\n"
-            "   + Tự động hóa 100% quy trình Build .exe & Tự động đẩy Releases qua GitHub Actions CI/CD\n"
-            "   + Tích hợp Động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp ngay trên giao diện Desktop\n"
+            "• Tính năng nâng cấp mới v3.2.4:\n"
+            "   + Tối ưu hóa 100% Động Cơ Tự Động Cập Nhật GitHub cho cả Windows (.exe) và Linux (.deb/.sh)\n"
+            "   + Hộp thoại tự động cập nhật hiển thị gọn gàng % tiến độ thời gian thực (Large Percentage Bar)\n"
+            "   + Nâng cấp tính năng Kéo & Thả Video hoàn hảo trên Linux (Nautilus, Dolphin, Thunar)\n"
+            "   + Tự động hóa quy trình Build .exe & Tự động đẩy Releases qua GitHub Actions CI/CD\n"
+            "   + Tích hợp Động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp không bị khóa file\n"
             "   + Khắc phục triệt để lỗi che khuất văn bản thông tin phiên bản ở cửa sổ thu nhỏ\n"
-            "   + Khung hiển thị chi tiết nhật ký phát hành với thanh cuộn tự động (ScrolledText) không sợ tràn chữ\n"
-            "   + Khắc phục triệt để lỗi lặp lại hộp thoại cài đặt / lưu liên tục khi phát hoặc cắt\n"
-            "   + Cơ chế Auto-Installer FFmpeg đa tầng (urllib SSL-Bypass + curl + PowerShell + winget)\n"
-            "   + Hộp thoại lưu file (Save As) chỉ mở đúng 1 lần duy nhất, hủy bỏ an toàn không văng lỗi\n"
+            "   + Hộp thoại lưu file (Save As) mở đúng 1 lần duy nhất, hủy bỏ an toàn không văng lỗi\n"
             "   + Tích hợp Crash Logger ghi nhận file crash_log.txt để không bao giờ tự đóng âm thầm\n"
-            "   + Kéo thả video vào khung Cắt hoặc khung Ghép (hỗ trợ nhiều file cùng lúc qua windnd)\n"
-            "   + Timeline tương tác trực tiếp với chuột cho cả Cắt và Ghép phân đoạn\n"
             "   + MPEG-TS Lossless Concat: Đảm bảo nối nguyên vẹn mọi video không lệch tiếng."
         )
 
@@ -3726,7 +3729,7 @@ class VideoEditorApp(BaseAppWindow):
         self.btn_run_cut.config(state="disabled")
         self.cut_progress.configure(value=0)
         self.cut_progress_lbl.config(text="Đang bắt đầu cắt: 0%...", fg="#38bdf8")
-        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.3 PRO...")
+        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.4 PRO...")
         self.start_process_timer("Đang cắt video")
 
         def worker():
@@ -3845,7 +3848,7 @@ class VideoEditorApp(BaseAppWindow):
                     self.after(0, lambda: (
                         self.add_merge_file_list([c1, c2]),
                         messagebox.showinfo(
-                            "Đã Tạo Video Mẫu Test v3.2.3",
+                            "Đã Tạo Video Mẫu Test v3.2.4",
                             f"Đã tạo và nạp thành công 2 video mẫu test vào danh sách:\n"
                             f"1. Clip 1: H.264 1080p @ 30FPS (4 giây)\n"
                             f"2. Clip 2: H.265 720p @ 60FPS (4 giây)\n\n"
@@ -3861,7 +3864,7 @@ class VideoEditorApp(BaseAppWindow):
         threading.Thread(target=worker, daemon=True).start()
 
     def run_merge_thread(self):
-        """Động cơ Ghép Video v3.2.3 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
+        """Động cơ Ghép Video v3.2.4 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
         if not self.ensure_ffmpeg_ready(self.run_merge_thread):
             return
 
@@ -3938,7 +3941,7 @@ class VideoEditorApp(BaseAppWindow):
                 must_use_filter_concat = is_mixed_codecs or is_mixed_res or is_mixed_fps or use_smart_merge
 
                 if must_use_filter_concat:
-                    self.status_var.set(f"⚡ Smart-Merge v3.2.3 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
+                    self.status_var.set(f"⚡ Smart-Merge v3.2.4 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
                     
                     cmd = [FFMPEG_EXE, "-y"]
                     filter_lines = []
@@ -4002,7 +4005,7 @@ class VideoEditorApp(BaseAppWindow):
                             self.merge_progress_lbl.config(text=f"✅ Đã ghép xong 100% trong {d}! (Hoàn thành lúc {c})", fg="#10b981"),
                             messagebox.showinfo(
                                 "Thành công", 
-                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.3 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
+                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.4 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
                             ),
                             self.status_var.set(f"✅ Ghép video thành công 100%: {os.path.basename(dest)} • ⏱ Xử lý: {d} (lúc {c})")
                         ))

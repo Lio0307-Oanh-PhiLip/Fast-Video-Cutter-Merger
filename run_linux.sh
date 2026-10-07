@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================
-# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.2.3 PRO
+# ⚡ Fast Video Cutter & Merger Launcher (Linux) v3.2.4 PRO
 # ==============================================================
 
 set -e
@@ -8,7 +8,7 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 echo -e "\033[0;32m==============================================================\033[0m"
-echo -e "\033[0;32m   ⚡ Fast Video Cutter & Merger - Stream Copy (Linux v3.2.3 PRO)\033[0m"
+echo -e "\033[0;32m   ⚡ Fast Video Cutter & Merger - Stream Copy (Linux v3.2.4 PRO)\033[0m"
 echo -e "\033[0;32m==============================================================\033[0m"
 
 # 1. Kiểm tra Python 3

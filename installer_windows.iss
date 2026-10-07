@@ -1,10 +1,10 @@
 ; =====================================================================
-; Inno Setup Script: Fast Video Cutter & Merger Studio v3.2.3 PRO Setup
-; Builds: Output\FastVideoEditor_v3.2.3_Setup.exe for Windows 10 / 11 (x64)
+; Inno Setup Script: Fast Video Cutter & Merger Studio v3.2.4 PRO Setup
+; Builds: Output\FastVideoEditor_v3.2.4_Setup.exe for Windows 10 / 11 (x64)
 ; =====================================================================
 
 #define MyAppName "Fast Video Cutter & Merger Studio"
-#define MyAppVersion "3.2.3"
+#define MyAppVersion "3.2.4"
 #define MyAppPublisher "Lossless Video Tools"
 #define MyAppExeName "FastVideoEditor.exe"
 
@@ -17,7 +17,7 @@ DefaultDirName={autopf}\FastVideoEditor
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=Output
-OutputBaseFilename=FastVideoEditor_v3.2.3_Setup
+OutputBaseFilename=FastVideoEditor_v3.2.4_Setup
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern

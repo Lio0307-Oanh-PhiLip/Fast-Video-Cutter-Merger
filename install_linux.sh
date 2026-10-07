@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================
 # Trình cài đặt tự động 1-click cho Linux (Ubuntu / Debian / Arch / Fedora)
-# Cài đặt biểu tượng hệ thống chuẩn HD, Desktop Shortcut & Drag-Drop v3.2.3 PRO
+# Cài đặt biểu tượng hệ thống chuẩn HD, Desktop Shortcut & Drag-Drop v3.2.4 PRO
 # ==============================================================
 
 set -e
 
 echo "=============================================================="
-echo "   ⚡ CÀI ĐẶT FAST VIDEO CUTTER & MERGER VÀO HỆ THỐNG LINUX v3.2.3"
+echo "   ⚡ CÀI ĐẶT FAST VIDEO CUTTER & MERGER VÀO HỆ THỐNG LINUX v3.2.4"
 echo "=============================================================="
 echo ""
 
