@@ -41,8 +41,19 @@ jobs:
       - name: Install Inno Setup and Compile Installer
         run: |
           choco install innosetup -y
-          if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
-            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer_windows.iss
+          $isccPath = ""
+          if (Get-Command "iscc.exe" -ErrorAction SilentlyContinue) {
+            $isccPath = "iscc.exe"
+          } elseif (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+            $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          } elseif (Test-Path "C:\Program Files\Inno Setup 6\ISCC.exe") {
+            $isccPath = "C:\Program Files\Inno Setup 6\ISCC.exe"
+          }
+          if ($isccPath) {
+            Write-Host "Found ISCC at $isccPath, compiling installer_windows.iss..."
+            & $isccPath installer_windows.iss
+          } else {
+            Write-Warning "ISCC.exe not found!"
           }
         continue-on-error: true
 

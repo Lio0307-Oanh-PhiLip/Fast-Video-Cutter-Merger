@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.2.0 - Test Suite
+title Fast Video Cutter and Merger Studio v3.2.2 - Test Suite
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.0 PRO - TEST SUITE
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.2 PRO - TEST SUITE
 echo ==============================================================
 echo.
 

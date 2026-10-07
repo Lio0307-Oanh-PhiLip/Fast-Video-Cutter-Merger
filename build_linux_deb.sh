@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================
-# Script đóng gói gói cài đặt chuẩn Debian / Ubuntu (.deb) v3.2.0 PRO
+# Script đóng gói gói cài đặt chuẩn Debian / Ubuntu (.deb) v3.2.2 PRO
 # Khắc phục hoàn toàn lỗi treo hệ thống và tương thích 100% Ubuntu/Debian/Mint
 # ==============================================================
 
@@ -12,7 +12,7 @@ ARCH="amd64"
 BUILD_DIR="build_deb/${PKG_NAME}_${VERSION}_${ARCH}"
 
 echo "=============================================================="
-echo "  ⚡ ĐANG ĐÓNG GÓI GÓI CÀI ĐẶT UBUNTU / DEBIAN (.DEB) v3.2.0 PRO"
+echo "  ⚡ ĐANG ĐÓNG GÓI GÓI CÀI ĐẶT UBUNTU / DEBIAN (.DEB) v3.2.2 PRO"
 echo "=============================================================="
 
 # 1. Dọn dẹp thư mục tạm
@@ -36,7 +36,7 @@ Depends: ffmpeg, python3, python3-tk
 Recommends: tkdnd
 Maintainer: FastVideoEditor Studio <support@fastvideo.org>
 Description: High-speed Lossless Video Cutter, Merger & Remuxer Studio.
- Fast Video Cutter & Merger Studio v3.2.0 - Cắt, ghép và chuyển đuôi video siêu tốc
+ Fast Video Cutter & Merger Studio v3.2.2 - Cắt, ghép và chuyển đuôi video siêu tốc
  chuẩn Lossless Stream Copy (CRF 17 Studio Quality, Không Treo Máy).
 EOF
 

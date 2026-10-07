@@ -1,5 +1,5 @@
 # ==============================================================
-# Fast Video Cutter & Merger Studio v3.1.6 PRO
+# Fast Video Cutter & Merger Studio v3.2.2 PRO
 # Windows 1-Click Setup Builder (PowerShell Engine)
 # ==============================================================
 
@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 Set-Location -Path $PSScriptRoot
 
 Write-Host "==============================================================" -ForegroundColor Cyan
-Write-Host "   FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO" -ForegroundColor Green
+Write-Host "   FAST VIDEO CUTTER AND MERGER STUDIO v3.2.2 PRO" -ForegroundColor Green
 Write-Host "   Automated Build & Package Engine for Windows 10 / 11" -ForegroundColor Yellow
 Write-Host "==============================================================" -ForegroundColor Cyan
 Write-Host ""
@@ -132,11 +132,11 @@ if (-not $Iscc) {
 if ($Iscc -and (Test-Path "installer_windows.iss")) {
     Write-Host "[*] Đang tạo bộ cài đặt Windows Setup qua Inno Setup..." -ForegroundColor Cyan
     & $Iscc installer_windows.iss
-    if (Test-Path "Output\FastVideoEditor_v3.1.6_Setup.exe") {
+    if (Test-Path "Output\FastVideoEditor_v3.2.2_Setup.exe") {
         Write-Host "==============================================================" -ForegroundColor Green
-        Write-Host "[THÀNH CÔNG] Đang mở Cửa Sổ Cài Đặt: Output\FastVideoEditor_v3.1.6_Setup.exe" -ForegroundColor Green
+        Write-Host "[THÀNH CÔNG] Đang mở Cửa Sổ Cài Đặt: Output\FastVideoEditor_v3.2.2_Setup.exe" -ForegroundColor Green
         Write-Host "==============================================================" -ForegroundColor Green
-        Start-Process "Output\FastVideoEditor_v3.1.6_Setup.exe"
+        Start-Process "Output\FastVideoEditor_v3.2.2_Setup.exe"
         exit 0
     }
 }

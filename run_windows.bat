@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.2.0 - Launcher
+title Fast Video Cutter and Merger Studio v3.2.2 - Launcher
 cls
 
 echo ==============================================================
-echo    Fast Video Cutter and Merger Studio v3.2.0 PRO (Windows)
+echo    Fast Video Cutter and Merger Studio v3.2.2 PRO (Windows)
 echo    Lossless Stream Copy Engine - Zero Re-encode Delay
 echo ==============================================================
 echo.

@@ -1,7 +1,7 @@
 import os
 import json
 
-print("=== RE-SYNCHRONIZING DESKTOP SCRIPTS AND INSTALLER SCRIPTS v3.2.0 ===")
+print("=== RE-SYNCHRONIZING DESKTOP SCRIPTS AND INSTALLER SCRIPTS v3.2.2 ===")
 
 def read_file(path):
     if os.path.exists(path):
@@ -21,7 +21,7 @@ build_linux_deb_sh = read_file("build_linux_deb.sh")
 build_linux_appimage_sh = read_file("build_linux_appimage.sh")
 
 # 1. Update src/data/desktopScripts.ts
-desktop_ts = f"""// Auto-generated synchronized desktop scripts (v3.2.0 PRO)
+desktop_ts = f"""// Auto-generated synchronized desktop scripts (v3.2.2 PRO)
 export const FAST_VIDEO_EDITOR_PY = {json.dumps(fast_editor_py, ensure_ascii=False)};
 export const PYTHON_SCRIPT_CODE = FAST_VIDEO_EDITOR_PY;
 export const RUN_WINDOWS_BAT = {json.dumps(run_windows_bat, ensure_ascii=False)};
@@ -33,7 +33,7 @@ with open("src/data/desktopScripts.ts", "w", encoding="utf-8") as f:
 print(f"[OK] Wrote src/data/desktopScripts.ts ({len(desktop_ts)} bytes)")
 
 # 2. Update src/data/installerScripts.ts
-installer_ts = f"""// Auto-generated synchronized installer scripts (v3.2.0 PRO)
+installer_ts = f"""// Auto-generated synchronized installer scripts (v3.2.2 PRO)
 export const INNO_SETUP_SCRIPT = {json.dumps(inno_setup_iss, ensure_ascii=False)};
 export const BUILD_WINDOWS_INSTALLER_BAT = {json.dumps(build_windows_setup_bat, ensure_ascii=False)};
 export const BUILD_LINUX_DEB_SH = {json.dumps(build_linux_deb_sh, ensure_ascii=False)};
