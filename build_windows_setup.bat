@@ -1,59 +1,60 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.6 - 1-Click Setup Builder
+title Fast Video Cutter and Merger Studio v3.1.9 - 1-Click Setup Builder
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO
-echo    1-Click Setup Builder [Inno Setup + PyInstaller]
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.9 PRO
+echo    1-Click Windows Setup Builder (Inno Setup)
 echo ==============================================================
 echo.
 
-set "PYTHON_CMD="
-
-python --version >nul 2>&1
+set "ISCC_PATH="
+if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" (
+    set "ISCC_PATH=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+    goto :RUN_BUILD
+)
+if exist "%ProgramFiles%\Inno Setup 6\ISCC.exe" (
+    set "ISCC_PATH=%ProgramFiles%\Inno Setup 6\ISCC.exe"
+    goto :RUN_BUILD
+)
+if exist "%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" (
+    set "ISCC_PATH=%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe"
+    goto :RUN_BUILD
+)
+where iscc.exe >nul 2>&1
 if not errorlevel 1 (
-    set "PYTHON_CMD=python"
+    set "ISCC_PATH=iscc.exe"
     goto :RUN_BUILD
 )
 
-py -3 --version >nul 2>&1
-if not errorlevel 1 (
-    set "PYTHON_CMD=py -3"
+echo [*] Installing Inno Setup 6 silently via winget...
+winget install JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements >nul 2>&1
+
+if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" (
+    set "ISCC_PATH=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
     goto :RUN_BUILD
 )
 
-for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
-    if exist "%%~fD\python.exe" (
-        set "PYTHON_CMD=%%~fD\python.exe"
-        set "PATH=%%~fD;%%~fD\Scripts;%PATH%"
-        goto :RUN_BUILD
-    )
-)
-
-for /d %%D in ("%ProgramFiles%\Python*") do (
-    if exist "%%~fD\python.exe" (
-        set "PYTHON_CMD=%%~fD\python.exe"
-        set "PATH=%%~fD;%%~fD\Scripts;%PATH%"
-        goto :RUN_BUILD
-    )
-)
-
-echo [*] Dang tu dong cai dat Python qua winget...
-winget install Python.Python.3.11 --silent --accept-source-agreements --accept-package-agreements >nul 2>&1
-python --version >nul 2>&1 && set "PYTHON_CMD=python"
-
-:RUN_BUILD
-if "%PYTHON_CMD%"=="" (
-    echo [ERROR] Khong tim thay Python. Vui long cai dat Python 3.9+ tu https://python.org
+if "%ISCC_PATH%"=="" (
+    echo [ERROR] Inno Setup is required. Download from https://jrsoftware.org/isdl.php
     pause
     exit /b 1
 )
 
-echo [OK] Su dung Python: %PYTHON_CMD%
-echo.
-%PYTHON_CMD% build_installer.py
+:RUN_BUILD
+echo [*] Compiling Inno Setup Script: installer_windows.iss...
+"%ISCC_PATH%" installer_windows.iss
+if errorlevel 1 (
+    echo [ERROR] Compilation failed.
+    pause
+    exit /b 1
+)
 
 echo.
+echo ==============================================================
+echo [SUCCESS] Windows Setup Package Created Successfully!
+echo Output: dist\FastVideoEditor_Setup_v3.1.9.exe
+echo ==============================================================
 pause

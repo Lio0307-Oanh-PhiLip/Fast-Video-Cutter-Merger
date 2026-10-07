@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.1.6 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.1.9 PRO (Lossless Stream Copy)
   Đồng bộ Logo biểu tượng & Taskbar Icon chuyên nghiệp cho cả Windows & Linux
   Hỗ trợ Kéo & Thả Video 100% Hoàn Hảo (Linux Nautilus/Dolphin & Windows Explorer)
 =============================================================================
@@ -16,10 +16,10 @@ APP_ICON_B64 = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAAAAAAA
 
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.1.6 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.1.9 PRO (Lossless Stream Copy)
   Hỗ trợ cả Windows 10/11 & Linux (Ubuntu, Debian, Fedora, Arch...)
   Nguyên lý: Stream Copy với FFmpeg (Không re-encode, tốc độ ghi đĩa thực tế)
-  Nâng cấp v3.1.6 PRO:
+  Nâng cấp v3.1.9 PRO:
     - Khắc phục triệt để lỗi lặp lại hộp thoại cài đặt / lưu liên tục khi phát hoặc cắt
     - Cơ chế Auto-Installer FFmpeg đa tầng cực mạnh (urllib SSL-Bypass + curl + PowerShell + winget)
     - Tự động kích hoạt ngay sau khi cài xong, không hỏi lại hay lặp vòng lặp
@@ -62,10 +62,10 @@ except ImportError:
             pass
     else:
         try:
-            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.1.6", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
+            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.1.9", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
         except Exception:
             try:
-                subprocess.run(["notify-send", "Fast Video Editor v3.1.6", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
+                subprocess.run(["notify-send", "Fast Video Editor v3.1.9", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
             except Exception:
                 pass
     print(f"[ERROR] {err_txt}")
@@ -124,7 +124,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
     print(f"[CRASH_LOG] {err_str}", file=sys.stderr)
     try:
         messagebox.showerror(
-            "Lỗi Ứng Dụng (v3.1.6 PRO)", 
+            "Lỗi Ứng Dụng (v3.1.9 PRO)", 
             f"Đã phát hiện lỗi thực thi:\n\n{str(exc_value)}\n\nChi tiết xem tại file 'crash_log.txt'."
         )
     except Exception:
@@ -134,7 +134,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Đã phát hiện sự cố khởi chạy ứng dụng:\n\n{str(exc_value)}\n\nChi tiết đã ghi vào file crash_log.txt", 
-                    "Sự Cố Fast Video Editor v3.1.6", 
+                    "Sự Cố Fast Video Editor v3.1.9", 
                     0x10
                 )
             except Exception:
@@ -143,9 +143,9 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 # =====================================================================
-# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.1.6 PRO)
+# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.1.9 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.1.6"
+CURRENT_APP_VERSION = "v3.1.9"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -188,12 +188,12 @@ def parse_version_tuple(v_str):
         return (0, 0, 0)
 
 def check_github_update_sync(custom_repo=None):
-    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.1.6 PRO)"""
+    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.1.9 PRO)"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    headers = {"User-Agent": "FastVideoEditor-Updater/3.1.6", "Accept": "application/vnd.github.v3+json"}
+    headers = {"User-Agent": "FastVideoEditor-Updater/3.1.7", "Accept": "application/vnd.github.v3+json"}
 
     saved_cfg = load_app_config()
     last_known_sha = saved_cfg.get("last_seen_sha", "")
@@ -214,7 +214,7 @@ def check_github_update_sync(custom_repo=None):
                     assets = first.get("assets", [])
                     v_remote = parse_version_tuple(tag_name)
                     v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                    has_up = (v_remote > v_local) or (tag_name and tag_name != CURRENT_APP_VERSION and tag_name != f"v{CURRENT_APP_VERSION}")
+                    has_up = (v_remote > v_local)
                     return {
                         "has_update": has_up,
                         "latest_version": tag_name or CURRENT_APP_VERSION,
@@ -250,10 +250,10 @@ def check_github_update_sync(custom_repo=None):
                                 remote_v = m.group(1).strip() if m else CURRENT_APP_VERSION
                                 v_remote = parse_version_tuple(remote_v)
                                 v_local = parse_version_tuple(CURRENT_APP_VERSION)
-                                has_up = (v_remote > v_local) or (remote_v != CURRENT_APP_VERSION) or (sha and sha != last_known_sha)
+                                has_up = (v_remote > v_local)
                                 return {
                                     "has_update": has_up,
-                                    "latest_version": remote_v if remote_v != CURRENT_APP_VERSION else f"{CURRENT_APP_VERSION} (Commit @ {sha})",
+                                    "latest_version": remote_v if v_remote > v_local else f"{CURRENT_APP_VERSION} (Commit @ {sha})",
                                     "name": f"Mã nguồn GitHub {repo} ({branch} @ {sha})",
                                     "url": f"https://github.com/{repo}/tree/{branch}",
                                     "notes": f"• Thông điệp commit: {commit_msg}\n• Ngày cập nhật: {author_date}\n• Mã SHA: {sha}",
@@ -277,7 +277,7 @@ def check_github_update_sync(custom_repo=None):
 
 
 class AppUpdateDialog(tk.Toplevel):
-    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click (v3.1.6 PRO)"""
+    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click (v3.1.9 PRO)"""
     def __init__(self, parent, update_info):
         super().__init__(parent)
         self.parent = parent
@@ -457,7 +457,19 @@ class AppUpdateDialog(tk.Toplevel):
             self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp...", 95)
             time.sleep(0.5)
 
-            # 3. Kích hoạt cập nhật
+            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.1.9 PRO)
+            sha = self.update_info.get("sha")
+            if sha:
+                try:
+                    cfg = load_app_config()
+                    cfg["last_seen_sha"] = sha
+                    save_app_config(cfg)
+                except Exception:
+                    pass
+
+            app_dir = get_app_dir()
+            target_script = os.path.join(app_dir, "fast_video_editor.py")
+
             if os.name == "nt":
                 if dest_path.lower().endswith(".exe"):
                     subprocess.Popen([dest_path], shell=False)
@@ -465,26 +477,53 @@ class AppUpdateDialog(tk.Toplevel):
                     return
                 elif dest_path.lower().endswith(".zip"):
                     shutil.unpack_archive(dest_path, save_dir)
-                    self.update_ui("✅ Đã cập nhật thành công!", 100)
-                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã tải và giải nén bản cập nhật {tag}.\nVui lòng khởi động lại ứng dụng.")
+                    # Copy over updated script if in archive
+                    for root_d, _, files in os.walk(save_dir):
+                        if "fast_video_editor.py" in files:
+                            src_p = os.path.join(root_d, "fast_video_editor.py")
+                            if os.path.abspath(src_p) != os.path.abspath(target_script):
+                                try: shutil.copy2(src_p, target_script)
+                                except Exception: pass
+                            break
                 else:
-                    # File python script
-                    app_dir = get_app_dir()
-                    target_script = os.path.join(app_dir, "fast_video_editor.py")
                     if os.path.abspath(dest_path) != os.path.abspath(target_script):
                         try: shutil.copy2(dest_path, target_script)
                         except Exception: pass
-                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã cập nhật mã nguồn mới {tag}.\nVui lòng khởi động lại ứng dụng.")
+
+                self.update_ui("✅ Đã cập nhật thành công v3.1.9! Đang tự động khởi chạy...", 100)
+                time.sleep(0.8)
+                try:
+                    if getattr(sys, 'frozen', False):
+                        subprocess.Popen([sys.executable] + sys.argv[1:])
+                    else:
+                        python_exe = sys.executable
+                        script_p = os.path.abspath(sys.argv[0])
+                        subprocess.Popen([python_exe, script_p] + sys.argv[1:])
+                    self.after(400, lambda: (self.parent.destroy(), sys.exit(0)))
+                    return
+                except Exception:
+                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã nâng cấp lên bản {tag} thành công!\nVui lòng mở lại ứng dụng.")
             else:
                 if dest_path.lower().endswith(".deb"):
                     try: subprocess.Popen(["pkexec", "dpkg", "-i", dest_path])
                     except Exception: subprocess.Popen(["xdg-open", dest_path])
                 else:
-                    shutil.unpack_archive(dest_path, save_dir)
-                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã tải bản cập nhật {tag} vào {save_dir}.")
+                    if os.path.abspath(dest_path) != os.path.abspath(target_script):
+                        try: shutil.copy2(dest_path, target_script)
+                        except Exception: pass
+
+                self.update_ui("✅ Đã cập nhật xong!", 100)
+                try:
+                    python_exe = sys.executable
+                    script_p = os.path.abspath(sys.argv[0])
+                    subprocess.Popen([python_exe, script_p] + sys.argv[1:])
+                    self.after(400, lambda: (self.parent.destroy(), sys.exit(0)))
+                    return
+                except Exception:
+                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã nâng cấp lên bản {tag} thành công!\nVui lòng mở lại ứng dụng.")
 
             self.update_ui("Hoàn tất cập nhật!", 100)
-            self.after(1000, self.destroy)
+            self.after(800, self.destroy)
 
         except Exception as e:
             self.update_ui(f"Lỗi tải: {str(e)[:40]}", 0)
@@ -495,7 +534,7 @@ class AppUpdateDialog(tk.Toplevel):
 
 
 # =====================================================================
-# HỖ TRỢ KÉO & THẢ VIDEO CHUYÊN NGHIỆP TRÊN CẢ WINDOWS & LINUX (ZERO-CRASH)
+# HỖ TRỢ KÉO & THẢ VIDEO CHUYÊN NGHIỆP TRÊN CẢ WINDOWS & LINUX (ZERO-CRASH v3.1.9)
 # =====================================================================
 HAS_TKDND = False
 TkinterDnD_Tk = None
@@ -507,133 +546,80 @@ except Exception:
     HAS_TKDND = False
     TkinterDnD_Tk = None
 
-# Base window class: Use TkinterDnD.Tk on Linux/Windows if available, otherwise tk.Tk
-if HAS_TKDND and TkinterDnD_Tk is not None:
-    class BaseAppWindow(TkinterDnD_Tk):
-        pass
-else:
-    class BaseAppWindow(tk.Tk):
-        pass
+HAS_WINDND = False
+if os.name == "nt":
+    try:
+        import windnd
+        HAS_WINDND = True
+    except Exception:
+        HAS_WINDND = False
 
-# Global storage for ctypes callbacks
-_EMBEDDED_DND_PROCS = {}
+class BaseAppWindow(tk.Tk):
+    """
+    Cửa sổ gốc Tkinter an toàn tuyệt đối 100% (Zero-Crash v3.1.9).
+    Tự động khởi tạo TkinterDnD nếu khả dụng; nếu thiếu hoặc lỗi thư viện Tcl sẽ tự động fallback về tk.Tk chuẩn mà KHÔNG BAO GIỜ bị crash.
+    """
+    def __init__(self, *args, **kwargs):
+        global HAS_TKDND
+        self.dnd_supported = False
+        if HAS_TKDND and TkinterDnD_Tk is not None:
+            try:
+                TkinterDnD_Tk.__init__(self, *args, **kwargs)
+                self.dnd_supported = True
+                return
+            except Exception:
+                HAS_TKDND = False
+                self.dnd_supported = False
+        super().__init__(*args, **kwargs)
 
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
-    Bộ hook Win32 Drag & Drop nhúng trực tiếp bằng Pure Python (v3.1.6 PRO).
-    Hỗ trợ 64-bit/32-bit Windows, Unicode (DragQueryFileW), tự động nhận diện nhiều file,
-    100% an toàn tuyệt đối, truyền dữ liệu qua window.after(0, ...) để tránh crash Tcl/Tk.
+    Hook Drag & Drop an toàn 100% trên Windows (v3.1.9 PRO).
+    Tích hợp đa tầng: windnd (nếu có) + DragAcceptFiles Win32.
+    Mọi luồng xử lý đều bọc try/except tuyệt đối, không đè WndProc gây crash 0xC0000005.
     """
     if os.name != "nt":
         return False
-
-    # 1. Thử sử dụng windnd nếu đã cài đặt
+    
+    # 1. Thử dùng windnd nếu đã cài đặt
+    if HAS_WINDND:
+        try:
+            def _windnd_cb(files):
+                try:
+                    clean_files = []
+                    for f in files:
+                        if isinstance(f, bytes):
+                            try: f = f.decode("utf-8")
+                            except Exception: f = f.decode("mbcs", errors="ignore")
+                        f_str = os.path.normpath(str(f).strip().strip('"').strip("'"))
+                        if os.path.exists(f_str):
+                            clean_files.append(f_str)
+                    if clean_files:
+                        window.after(0, lambda: on_drop_callback(clean_files))
+                except Exception as ex:
+                    print(f"[WINDND_CALLBACK_ERR] {ex}", file=sys.stderr)
+            
+            windnd.hook_dropfiles(window, func=_windnd_cb)
+            return True
+        except Exception as e:
+            print(f"[WINDND_HOOK_ERR] {e}", file=sys.stderr)
+    
+    # 2. Thử bật DragAcceptFiles trên HWND top-level (để Windows Explorer cho phép nhả chuột)
     try:
-        import windnd
-        def _windnd_wrapper(files):
-            try:
-                clean_list = []
-                for f in files:
-                    if isinstance(f, bytes):
-                        try: p = f.decode("utf-8")
-                        except Exception: p = f.decode("mbcs", errors="ignore")
-                    else:
-                        p = str(f)
-                    p_clean = os.path.normpath(p.strip().strip("'").strip('"'))
-                    if os.path.exists(p_clean):
-                        clean_list.append(p_clean)
-                if clean_list and on_drop_callback:
-                    window.after(0, lambda: on_drop_callback(clean_list))
-            except Exception:
-                pass
-        windnd.hook_dropfiles(window, _windnd_wrapper)
+        import ctypes
+        user32 = ctypes.windll.user32
+        shell32 = ctypes.windll.shell32
+        hwnd = window.winfo_id()
+        parent_hwnd = user32.GetParent(hwnd) or hwnd
+        root_hwnd = user32.GetAncestor(parent_hwnd, 2) or parent_hwnd
+        shell32.DragAcceptFiles(ctypes.c_void_p(root_hwnd), True)
+        shell32.DragAcceptFiles(ctypes.c_void_p(parent_hwnd), True)
+        shell32.DragAcceptFiles(ctypes.c_void_p(hwnd), True)
         return True
     except Exception:
         pass
-
-    # 2. Nhúng bộ Hook Win32 Pure Python an toàn 100%
-    try:
-        import ctypes
-        from ctypes import wintypes
-
-        is_64bit = ctypes.sizeof(ctypes.c_void_p) == 8
-        LRESULT = ctypes.c_ssize_t if is_64bit else ctypes.c_long
-        WPARAM = ctypes.c_size_t if is_64bit else ctypes.c_uint
-        LPARAM = ctypes.c_ssize_t if is_64bit else ctypes.c_long
-        UINT = ctypes.c_uint
-        HWND = ctypes.c_void_p
-
-        GWLP_WNDPROC = -4
-        WM_DROPFILES = 0x0233
-
-        user32 = ctypes.windll.user32
-        shell32 = ctypes.windll.shell32
-
-        GetWindowLongPtr = getattr(user32, "GetWindowLongPtrW", getattr(user32, "GetWindowLongW"))
-        GetWindowLongPtr.argtypes = [HWND, ctypes.c_int]
-        GetWindowLongPtr.restype = ctypes.c_void_p
-
-        SetWindowLongPtr = getattr(user32, "SetWindowLongPtrW", getattr(user32, "SetWindowLongW"))
-        SetWindowLongPtr.argtypes = [HWND, ctypes.c_int, ctypes.c_void_p]
-        SetWindowLongPtr.restype = ctypes.c_void_p
-
-        CallWindowProc = user32.CallWindowProcW
-        CallWindowProc.argtypes = [ctypes.c_void_p, HWND, UINT, WPARAM, LPARAM]
-        CallWindowProc.restype = LRESULT
-
-        DragQueryFileW = shell32.DragQueryFileW
-        DragQueryFileW.argtypes = [WPARAM, UINT, wintypes.LPWSTR, UINT]
-        DragQueryFileW.restype = UINT
-
-        DragFinish = shell32.DragFinish
-        DragFinish.argtypes = [WPARAM]
-        DragFinish.restype = None
-
-        DragAcceptFiles = shell32.DragAcceptFiles
-        DragAcceptFiles.argtypes = [HWND, wintypes.BOOL]
-        DragAcceptFiles.restype = None
-
-        WNDPROC_PROTO = ctypes.WINFUNCTYPE(LRESULT, HWND, UINT, WPARAM, LPARAM)
-
-        try:
-            hwnd = window.winfo_id()
-            top_hwnd = user32.GetParent(hwnd) or hwnd
-        except Exception:
-            return False
-
-        if top_hwnd in _EMBEDDED_DND_PROCS:
-            return True
-
-        old_wndproc = GetWindowLongPtr(top_hwnd, GWLP_WNDPROC)
-        if not old_wndproc:
-            return False
-
-        def wndproc_callback(h_wnd, msg, wp, lp):
-            if msg == WM_DROPFILES:
-                try:
-                    num_files = DragQueryFileW(wp, 0xFFFFFFFF, None, 0)
-                    file_list = []
-                    buf = ctypes.create_unicode_buffer(2048)
-                    for i in range(num_files):
-                        DragQueryFileW(wp, i, buf, 2048)
-                        if buf.value:
-                            file_list.append(os.path.normpath(buf.value))
-                    DragFinish(wp)
-                    if file_list and on_drop_callback:
-                        window.after(0, lambda fl=file_list: on_drop_callback(fl))
-                except Exception:
-                    pass
-                return 0
-            return CallWindowProc(old_wndproc, h_wnd, msg, wp, lp)
-
-        new_cb = WNDPROC_PROTO(wndproc_callback)
-        _EMBEDDED_DND_PROCS[top_hwnd] = (new_cb, old_wndproc)
-
-        DragAcceptFiles(top_hwnd, True)
-        SetWindowLongPtr(top_hwnd, GWLP_WNDPROC, ctypes.cast(new_cb, ctypes.c_void_p))
-        return True
-    except Exception:
-        return False
+    
+    return False
 
 # =====================================================================
 # Bộ Nhận Diện Mã Hóa Siêu Tốc (Visually Lossless CRF 17 - Zero Freeze / 100% Ổn Định)
@@ -951,7 +937,7 @@ def get_video_duration(video_path):
 
 
 def get_video_stream_info(video_path):
-    """Lấy chi tiết codec video, audio, độ phân giải và framerate (v3.1.6 PRO Smart-Merge)"""
+    """Lấy chi tiết codec video, audio, độ phân giải và framerate (v3.1.9 PRO Smart-Merge)"""
     info = {
         "v_codec": "h264",
         "a_codec": "aac",
@@ -1232,7 +1218,7 @@ class DraggableTimeline(tk.Canvas):
 
 
 # =====================================================================
-# Main Application Class: Fast Video Cutter & Merger Studio v3.1.6 PRO
+# Main Application Class: Fast Video Cutter & Merger Studio v3.1.9 PRO
 # =====================================================================
 
 # =====================================================================
@@ -1241,7 +1227,7 @@ class DraggableTimeline(tk.Canvas):
 class FFmpegDownloadDialog(tk.Toplevel):
     def __init__(self, parent, on_success_callback=None):
         super().__init__(parent)
-        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.1.6")
+        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.1.9")
         self.geometry("540x260")
         self.resizable(False, False)
         self.configure(bg="#0f172a")
@@ -1270,7 +1256,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
         hdr.pack(fill="x")
         tk.Label(
             hdr, 
-            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.1.6 PRO)", 
+            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.1.9 PRO)", 
             font=("Segoe UI", 11, "bold"), 
             fg="#ffffff", 
             bg="#1e293b"
@@ -1499,7 +1485,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
             self.btn_action.config(text="Đóng", bg="#10b981", command=self.destroy)
             if hasattr(self.parent_app, "refresh_ffmpeg_status"):
                 self.parent_app.refresh_ffmpeg_status()
-            messagebox.showinfo("Thành Công", "Đã cài đặt và kích hoạt FFmpeg v3.1.6 thành công!\nBây giờ bạn có thể cắt và phát video ngay lập tức.")
+            messagebox.showinfo("Thành Công", "Đã cài đặt và kích hoạt FFmpeg v3.1.9 thành công!\nBây giờ bạn có thể cắt và phát video ngay lập tức.")
             self.destroy()
             if self.on_success:
                 try:
@@ -1526,7 +1512,7 @@ class VideoEditorApp(BaseAppWindow):
             super().__init__(className="fast-video-editor")
         except Exception:
             super().__init__()
-        self.title("Fast Video Cutter & Merger Studio v3.1.6 PRO (Lossless Stream Copy)")
+        self.title("Fast Video Cutter & Merger Studio v3.1.9 PRO (Lossless Stream Copy)")
         self.geometry("1120x760")
         self.minsize(880, 580)
         self.configure(bg="#0f172a")
@@ -1564,7 +1550,7 @@ class VideoEditorApp(BaseAppWindow):
         self.convert_strip_audio_var = tk.BooleanVar(value=False)
         self.convert_strip_video_var = tk.BooleanVar(value=False)
 
-        # Output Management & Hardware Acceleration v3.1.6
+        # Output Management & Hardware Acceleration v3.1.9
         self.last_output_file = None
         self.global_out_dir_var = tk.StringVar(value="")
         self.hw_accel_info = detect_best_hardware_encoder()
@@ -1641,12 +1627,17 @@ class VideoEditorApp(BaseAppWindow):
         # Kích hoạt bắt sự kiện kéo thả file an toàn qua windnd sau khi window đã render ổn định
         self.after(500, self.init_drag_and_drop_handlers)
 
+        # Xử lý các file được truyền qua tham số dòng lệnh hoặc khi kéo thả vào shortcut / file .bat (v3.1.9 PRO)
+        if len(sys.argv) > 1:
+            init_args = sys.argv[1:]
+            self.after(600, lambda: self.handle_initial_files(init_args))
+
         # Kiểm tra trạng thái FFmpeg lúc khởi động
         self.after(300, self.check_startup_ffmpeg)
 
     
     # =================================================================
-    # THANH MENU ỨNG DỤNG TOP BAR CHUYÊN NGHIỆP (v3.1.6 PRO)
+    # THANH MENU ỨNG DỤNG TOP BAR CHUYÊN NGHIỆP (v3.1.9 PRO)
     # =================================================================
     def setup_app_menu(self):
         """Khởi tạo Thanh Menu Ứng Dụng (Top Menu Bar) hiển thị trên cùng cửa sổ"""
@@ -1761,7 +1752,7 @@ class VideoEditorApp(BaseAppWindow):
         if os.name == "nt":
             try:
                 import ctypes
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("FastVideoEditor.Studio.v3.1.6")
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("FastVideoEditor.Studio.v3.1.9")
             except Exception:
                 pass
 
@@ -1795,7 +1786,7 @@ class VideoEditorApp(BaseAppWindow):
                 pass
 
     def setup_output_bar(self):
-        """Thanh điều khiển Thư Mục Đầu Ra & Mở Nhanh File Kết Quả (v3.1.6 PRO)"""
+        """Thanh điều khiển Thư Mục Đầu Ra & Mở Nhanh File Kết Quả (v3.1.9 PRO)"""
         out_bar = tk.Frame(self, bg="#0b1329", padx=12, pady=4, highlightthickness=1, highlightbackground="#1e293b")
         out_bar.pack(side="bottom", fill="x")
 
@@ -1922,10 +1913,19 @@ class VideoEditorApp(BaseAppWindow):
             pass
 
     def start_background_update_check(self):
+        if getattr(self, "_bg_update_checked", False):
+            return
+        self._bg_update_checked = True
         def worker():
             res = check_github_update_sync()
             if res.get("has_update"):
-                self.after(0, lambda r=res: self.show_update_banner(r))
+                def _notify():
+                    self.show_update_banner(res)
+                    if not getattr(self, "_update_dialog_active", False):
+                        self._update_dialog_active = True
+                        dlg = AppUpdateDialog(self, res)
+                        dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
+                self.after(0, _notify)
         threading.Thread(target=worker, daemon=True).start()
 
     def show_update_banner(self, update_info):
@@ -1940,8 +1940,12 @@ class VideoEditorApp(BaseAppWindow):
             pass
 
     def open_github_releases(self):
+        if getattr(self, "_update_dialog_active", False):
+            return
         if getattr(self, "last_update_info", None):
-            AppUpdateDialog(self, self.last_update_info)
+            self._update_dialog_active = True
+            dlg = AppUpdateDialog(self, self.last_update_info)
+            dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
         else:
             self.check_updates_manual()
 
@@ -1959,11 +1963,14 @@ class VideoEditorApp(BaseAppWindow):
                 
                 if res.get("has_update"):
                     self.last_update_info = res
-                    AppUpdateDialog(self, res)
+                    if not getattr(self, "_update_dialog_active", False):
+                        self._update_dialog_active = True
+                        dlg = AppUpdateDialog(self, res)
+                        dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
                 elif res.get("error"):
                     msg = (f"{res.get('error')}\n\n"
                            f"Hướng dẫn:\n"
-                           f"1. Hãy nhập đúng định dạng 'TênTàiKhoản/TênDựÁn' trên GitHub (Ví dụ: 'philiptrinh1990/FastVideoEditor' hoặc link repo của bạn).\n"
+                           f"1. Hãy nhập đúng định dạng 'TênTàiKhoản/TênDựÁn' trên GitHub (Ví dụ: 'Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger').\n"
                            f"2. Đảm bảo kho lưu trữ trên GitHub đang ở chế độ Public.\n"
                            f"3. Đã tạo Release / Tag hoặc upload mã nguồn lên nhánh main/master.")
                     messagebox.showwarning("Kiểm Tra Kho GitHub", msg)
@@ -1979,7 +1986,7 @@ class VideoEditorApp(BaseAppWindow):
 
         title_lbl = tk.Label(
             header_frame, 
-            text="⚡ FAST VIDEO CUTTER & MERGER v3.1.6 PRO", 
+            text="⚡ FAST VIDEO CUTTER & MERGER v3.1.9 PRO", 
             font=("Segoe UI", 12, "bold"), 
             fg="#38bdf8", 
             bg="#1e293b"
@@ -2086,7 +2093,7 @@ class VideoEditorApp(BaseAppWindow):
 
         msg = (
             "Chưa tìm thấy bộ công cụ FFmpeg trên máy tính.\n\n"
-            "Bạn có muốn hệ thống tự động tải và kích hoạt đầy đủ FFmpeg v3.1.6 ngay lập tức không?"
+            "Bạn có muốn hệ thống tự động tải và kích hoạt đầy đủ FFmpeg v3.1.9 ngay lập tức không?"
         )
         if messagebox.askyesno("Thiếu Công Cụ FFmpeg", msg):
             self.start_auto_download_ffmpeg(on_finished_callback=on_ready_callback)
@@ -2097,91 +2104,141 @@ class VideoEditorApp(BaseAppWindow):
     # =================================================================
     # KÍCH HOẠT KÉO THẢ FILE TRỰC TIẾP AN TOÀN (ZERO CRASH)
     # =================================================================
+    def _clean_single_path(self, raw_p):
+        """Làm sạch và kiểm tra tồn tại của một đường dẫn kéo thả bất kỳ (hỗ trợ Windows URI, Linux URI, Space, Unquote)"""
+        if not raw_p: return ""
+        import urllib.parse
+        s = str(raw_p).strip().strip("'").strip('"').strip('{').strip('}')
+        if not s: return ""
+        if s.startswith("file://"):
+            parsed = urllib.parse.urlparse(s)
+            path_part = urllib.parse.unquote(parsed.path)
+            if os.name == "nt" and len(path_part) >= 3 and path_part[0] == "/" and path_part[2] == ":":
+                path_part = path_part[1:]
+            s = path_part
+        s = os.path.normpath(s)
+        if os.path.exists(s):
+            return s
+        unq = urllib.parse.unquote(s)
+        if os.name == "nt" and len(unq) >= 3 and unq[0] == "/" and unq[2] == ":":
+            unq = unq[1:]
+        unq = os.path.normpath(unq)
+        if os.path.exists(unq):
+            return unq
+        alt = os.path.normpath(s.replace("\\ ", " "))
+        if os.path.exists(alt):
+            return alt
+        return ""
+
     def _parse_dnd_event_data(self, data_str):
-        """Phân tích dữ liệu kéo thả từ TkinterDnD2 hoặc xdg-dnd trên Linux & Windows (Xử lý 100% các định dạng v3.1.6)"""
+        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar & Windows Explorer (v3.1.9 PRO)"""
         if not data_str: return []
         if isinstance(data_str, (list, tuple)):
             clean_list = []
             for item in data_str:
-                p = os.path.normpath(str(item).strip().strip("'").strip('"'))
-                if os.path.exists(p):
+                p = self._clean_single_path(item)
+                if p and p not in clean_list:
                     clean_list.append(p)
             return clean_list
-        import urllib.parse
-        clean = []
 
-        # 1. Thử phân tích chuỗi nhiều dòng (định dạng text/uri-list từ Linux GNOME Nautilus, KDE Dolphin, XFCE Thunar)
+        clean = []
         raw_lines = str(data_str).replace("\r\n", "\n").replace("\r", "\n").split("\n")
         for line in raw_lines:
-            line = line.strip().strip("'").strip('"')
-            if not line: continue
-            if line.startswith("file://"):
-                p = urllib.parse.unquote(line[7:])
-                if os.path.exists(p):
-                    clean.append(os.path.normpath(p))
-            elif os.path.exists(line):
-                clean.append(os.path.normpath(line))
+            p = self._clean_single_path(line)
+            if p and p not in clean:
+                clean.append(p)
 
         if clean:
             return clean
 
-        # 2. Thử phân tích danh sách Tcl/Tk list (hỗ trợ dấu ngoặc nhọn `{path with spaces}`)
         try:
             items = self.tk.splitlist(data_str)
         except Exception:
             items = str(data_str).split()
 
         for it in items:
-            p = str(it).strip().strip("'").strip('"').strip('{').strip('}')
-            if p.startswith("file://"):
-                p = urllib.parse.unquote(p[7:])
-            if os.path.exists(p):
-                clean.append(os.path.normpath(p))
-            elif os.path.exists(p.replace("\\ ", " ")):
-                clean.append(os.path.normpath(p.replace("\\ ", " ")))
-            elif os.path.exists(urllib.parse.unquote(p)):
-                clean.append(os.path.normpath(urllib.parse.unquote(p)))
+            p = self._clean_single_path(it)
+            if p and p not in clean:
+                clean.append(p)
         return clean
 
     def init_drag_and_drop_handlers(self):
-        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND) và Windows Native Win32 (v3.1.6 PRO)"""
-        # 1. Trên Windows: Luôn kích hoạt native Win32 WM_DROPFILES hook cực kỳ ổn định (Zero-Crash)
+        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND) và Windows (windnd / Win32) (v3.1.9 PRO)"""
+        # 1. Kích hoạt hook native trên Windows (windnd hoặc DragAcceptFiles)
         if os.name == "nt":
             try:
                 setup_windows_native_drag_drop(self, self._on_global_drop)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[NATIVE_DND_INIT_ERR] {e}", file=sys.stderr)
 
-        # 2. Đăng ký TkinterDnD2 trên tất cả widget nếu có (Linux X11/Wayland và Windows OLE)
-        if HAS_TKDND:
+        # 2. Đăng ký TkinterDnD2 nếu hỗ trợ (Linux X11/Wayland và Windows OLE)
+        if getattr(self, "dnd_supported", False) or HAS_TKDND:
+            def make_dnd_handler(target_action):
+                def _handler(event):
+                    try:
+                        data = getattr(event, "data", None)
+                        if data:
+                            now = time.time()
+                            if now - getattr(self, "_last_drop_time", 0.0) < 0.35:
+                                return "break"
+                            self._last_drop_time = now
+                            files = self._parse_dnd_event_data(data)
+                            if files:
+                                self.after(0, lambda: target_action(files))
+                    except Exception as ex:
+                        print(f"[DND_EVENT_ERR] {ex}", file=sys.stderr)
+                    return "break"
+                return _handler
+
             target_widgets = [
-                (getattr(self, "cut_drop_zone", None), lambda e: self.on_cut_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "cut_canvas", None), lambda e: self.on_cut_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "tab_cut", None), lambda e: self.on_cut_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "merge_drop_zone", None), lambda e: self.on_merge_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "merge_canvas", None), lambda e: self.on_merge_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "merge_listbox", None), lambda e: self.on_merge_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "tab_merge", None), lambda e: self.on_merge_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "convert_drop_zone", None), lambda e: self.on_convert_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "convert_listbox", None), lambda e: self.on_convert_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "tab_convert", None), lambda e: self.on_convert_files_received(self._parse_dnd_event_data(e.data))),
-                (getattr(self, "notebook", None), lambda e: self._on_global_drop(self._parse_dnd_event_data(e.data))),
-                (self, lambda e: self._on_global_drop(self._parse_dnd_event_data(e.data))),
+                (getattr(self, "cut_drop_zone", None), self.on_cut_files_received),
+                (getattr(self, "cut_canvas", None), self.on_cut_files_received),
+                (getattr(self, "merge_drop_zone", None), self.on_merge_files_received),
+                (getattr(self, "merge_canvas", None), self.on_merge_files_received),
+                (getattr(self, "merge_listbox", None), self.on_merge_files_received),
+                (getattr(self, "convert_drop_zone", None), self.on_convert_files_received),
+                (getattr(self, "convert_listbox", None), self.on_convert_files_received),
+                (getattr(self, "notebook", None), self._on_global_drop),
+                (self, self._on_global_drop),
             ]
-            for w, handler in target_widgets:
+            for w, action in target_widgets:
                 if w is not None:
                     try:
                         if hasattr(w, "drop_target_register"):
-                            w.drop_target_register(DND_FILES, DND_ALL)
-                            w.dnd_bind("<<Drop>>", handler)
-                            w.dnd_bind("<<Drop:DND_Files>>", handler)
+                            w.drop_target_register(DND_FILES)
+                            h = make_dnd_handler(action)
+                            w.dnd_bind("<<Drop>>", h)
+                            w.dnd_bind("<<Drop:DND_Files>>", h)
                     except Exception:
-                        try:
-                            if hasattr(w, "drop_target_register"):
-                                w.drop_target_register(DND_FILES)
-                                w.dnd_bind("<<Drop>>", handler)
-                        except Exception:
-                            pass
+                        pass
+
+
+    def handle_initial_files(self, args_list):
+        """Xử lý khi người dùng kéo thả file vào shortcut, file .bat, hoặc chạy dòng lệnh (v3.1.9 PRO)"""
+        try:
+            valid_files = []
+            for a in args_list:
+                p = self._clean_single_path(a)
+                if p and p not in valid_files:
+                    valid_files.append(p)
+            if not valid_files:
+                return
+
+            video_exts = (".mp4", ".mkv", ".mov", ".avi", ".ts", ".webm", ".m4v", ".flv", ".wmv", ".3gp")
+            videos = [f for f in valid_files if os.path.splitext(f)[1].lower() in video_exts]
+            if not videos:
+                videos = valid_files
+
+            if len(videos) == 1:
+                self.notebook.select(0)
+                self.load_cut_file(videos[0])
+                self.status_var.set(f"✅ Đã nạp video vào khung cắt: {os.path.basename(videos[0])}")
+            elif len(videos) > 1:
+                self.notebook.select(1)
+                self.add_merge_file_list(videos)
+                self.status_var.set(f"✅ Đã nạp {len(videos)} video vào danh sách ghép.")
+        except Exception as e:
+            print(f"[HANDLE_INITIAL_ERR] {e}", file=sys.stderr)
 
     def _on_global_drop(self, files):
         if not files: return
@@ -2212,13 +2269,22 @@ class VideoEditorApp(BaseAppWindow):
         self.after(0, lambda: self.on_merge_files_received(clean_paths))
 
     def on_cut_files_received(self, file_paths):
-        video_exts = (".mp4", ".mkv", ".mov", ".avi", ".ts", ".webm", ".m4v", ".flv", ".wmv", ".3gp")
-        valid_videos = [p for p in file_paths if os.path.splitext(p)[1].lower() in video_exts]
-        if not valid_videos:
-            messagebox.showinfo("Kéo Thả Video", "Vui lòng kéo thả file có định dạng video (.mp4, .mkv, .mov, .ts...).")
-            return
-        self.load_cut_file(valid_videos[0])
-        self.status_var.set(f"Đã nạp video vào khung cắt: {os.path.basename(valid_videos[0])}")
+        try:
+            if not file_paths: return
+            if isinstance(file_paths, str): file_paths = [file_paths]
+            video_exts = (".mp4", ".mkv", ".mov", ".avi", ".ts", ".webm", ".m4v", ".flv", ".wmv", ".3gp", ".mpeg", ".mpg", ".vob")
+            valid_videos = []
+            for p in file_paths:
+                p_str = os.path.normpath(str(p).strip().strip('"').strip("'"))
+                if os.path.splitext(p_str)[1].lower() in video_exts and os.path.exists(p_str):
+                    valid_videos.append(p_str)
+            if not valid_videos:
+                self.status_var.set("⚠️ Vui lòng kéo thả file video hợp lệ (.mp4, .mkv, .mov, .ts, .avi...)." )
+                return
+            self.load_cut_file(valid_videos[0])
+            self.status_var.set(f"✅ Đã nạp video thành công: {os.path.basename(valid_videos[0])}")
+        except Exception as e:
+            self.status_var.set(f"Lỗi nạp file: {str(e)[:50]}")
 
     def on_merge_files_received(self, file_paths):
         try:
@@ -2530,7 +2596,7 @@ class VideoEditorApp(BaseAppWindow):
             pass
 
     # =================================================================
-    # TAB 2: GHÉP VIDEO v3.1.6 PRO (KÉO CHUỘT MƯỢT MÀ & KÉO THẢ NHIỀU FILE)
+    # TAB 2: GHÉP VIDEO v3.1.9 PRO (KÉO CHUỘT MƯỢT MÀ & KÉO THẢ NHIỀU FILE)
     # =================================================================
     def setup_merge_tab(self):
         paned = tk.PanedWindow(self.tab_merge, orient="horizontal", bg="#0f172a", sashwidth=4)
@@ -2681,7 +2747,7 @@ class VideoEditorApp(BaseAppWindow):
         self.merge_smart_codec_var = tk.BooleanVar(value=True)
         chk_m_smart = tk.Checkbutton(
             m_opts, 
-            text="⚡ Smart-Merge v3.1.6: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
+            text="⚡ Smart-Merge v3.1.9: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
             variable=self.merge_smart_codec_var, 
             bg="#0f172a", fg="#38bdf8", selectcolor="#1e293b", activebackground="#0f172a",
             font=("Segoe UI", 9, "bold")
@@ -2978,7 +3044,7 @@ class VideoEditorApp(BaseAppWindow):
     # =================================================================
 
     # =================================================================
-    # TAB 3: CHUYỂN ĐUÔI & TÁCH ÂM THANH SIÊU TỐC (v3.1.6 PRO)
+    # TAB 3: CHUYỂN ĐUÔI & TÁCH ÂM THANH SIÊU TỐC (v3.1.9 PRO)
     # =================================================================
     def setup_convert_tab(self):
         paned = tk.PanedWindow(self.tab_convert, orient="horizontal", bg="#0f172a", sashwidth=4)
@@ -3200,7 +3266,7 @@ class VideoEditorApp(BaseAppWindow):
             self.lbl_convert_out_dir.config(text=d if len(d) <= 35 else "..." + d[-32:])
 
     def run_convert_thread(self):
-        """Động cơ chuyển đổi định dạng & tách âm thanh siêu tốc v3.1.6 PRO"""
+        """Động cơ chuyển đổi định dạng & tách âm thanh siêu tốc v3.1.9 PRO"""
         if not self.ensure_ffmpeg_ready(self.run_convert_thread):
             return
 
@@ -3367,13 +3433,13 @@ class VideoEditorApp(BaseAppWindow):
         self.lbl_update_status_detail = tk.Label(box_update, text=f"• Hiện tại: {CURRENT_APP_VERSION} PRO | Kho lưu trữ cấu hình: {saved_repo}", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a")
         self.lbl_update_status_detail.pack(anchor="w", pady=(2, 0))
 
-        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.1.6 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=16, pady=12)
+        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.1.9 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=16, pady=12)
         box_info.pack(fill="x", pady=12)
 
         desc = (
-            "• Phiên bản: Fast Video Cutter & Merger Studio v3.1.6 PRO\n"
+            "• Phiên bản: Fast Video Cutter & Merger Studio v3.1.9 PRO\n"
             "• Chế độ xử lý: Lossless Stream Copy (Tốc độ tối đa ~1-3s, không làm nóng CPU/GPU)\n"
-            "• Tính năng nâng cấp v3.1.6:\n"
+            "• Tính năng nâng cấp v3.1.9:\n"
             "   + Khắc phục triệt để lỗi lặp lại hộp thoại cài đặt / lưu liên tục khi phát hoặc cắt\n"
             "   + Cơ chế Auto-Installer FFmpeg đa tầng cực mạnh (urllib SSL-Bypass + curl + PowerShell + winget)\n"
             "   + Tự động kích hoạt ngay sau khi cài xong, không hỏi lại hay lặp vòng lặp\n"
@@ -3431,7 +3497,7 @@ class VideoEditorApp(BaseAppWindow):
         self.btn_run_cut.config(state="disabled")
         self.cut_progress.configure(value=0)
         self.cut_progress_lbl.config(text="Đang bắt đầu cắt: 0%...", fg="#38bdf8")
-        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.1.6 PRO...")
+        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.1.9 PRO...")
 
         def worker():
             try:
@@ -3548,7 +3614,7 @@ class VideoEditorApp(BaseAppWindow):
                     self.after(0, lambda: (
                         self.add_merge_file_list([c1, c2]),
                         messagebox.showinfo(
-                            "Đã Tạo Video Mẫu Test v3.1.6",
+                            "Đã Tạo Video Mẫu Test v3.1.9",
                             f"Đã tạo và nạp thành công 2 video mẫu test vào danh sách:\n"
                             f"1. Clip 1: H.264 1080p @ 30FPS (4 giây)\n"
                             f"2. Clip 2: H.265 720p @ 60FPS (4 giây)\n\n"
@@ -3564,7 +3630,7 @@ class VideoEditorApp(BaseAppWindow):
         threading.Thread(target=worker, daemon=True).start()
 
     def run_merge_thread(self):
-        """Động cơ Ghép Video v3.1.6 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
+        """Động cơ Ghép Video v3.1.9 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
         if not self.ensure_ffmpeg_ready(self.run_merge_thread):
             return
 
@@ -3640,7 +3706,7 @@ class VideoEditorApp(BaseAppWindow):
                 must_use_filter_concat = is_mixed_codecs or is_mixed_res or is_mixed_fps or use_smart_merge
 
                 if must_use_filter_concat:
-                    self.status_var.set(f"⚡ Smart-Merge v3.1.6 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
+                    self.status_var.set(f"⚡ Smart-Merge v3.1.9 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
                     
                     cmd = [FFMPEG_EXE, "-y"]
                     filter_lines = []
@@ -3703,7 +3769,7 @@ class VideoEditorApp(BaseAppWindow):
                             self.merge_progress_lbl.config(text="✅ Đã ghép xong 100%!", fg="#10b981"),
                             messagebox.showinfo(
                                 "Thành công", 
-                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n\n⚡ Công nghệ Smart-Merge v3.1.6 PRO (GPU Tăng Tốc): Mọi đoạn chuyển cảnh mượt mà ở tốc độ 1.0x chuẩn."
+                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n\n⚡ Công nghệ Smart-Merge v3.1.9 PRO (GPU Tăng Tốc): Mọi đoạn chuyển cảnh mượt mà ở tốc độ 1.0x chuẩn."
                             ),
                             self.status_var.set(f"Ghép video thành công 100%: {os.path.basename(dest)}")
                         ))
@@ -3793,7 +3859,7 @@ if __name__ == "__main__":
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Ứng dụng gặp sự cố khi khởi chạy:\n\n{str(e)}\n\nChi tiết xem tại file 'crash_log.txt'.", 
-                    "Fast Video Cutter & Merger v3.1.6 - Crash Error", 
+                    "Fast Video Cutter & Merger v3.1.9 - Crash Error", 
                     0x10
                 )
             except Exception:

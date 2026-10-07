@@ -48,7 +48,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
                   <span>Fast Video Cutter &amp; Merger</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v3.1.6 PRO</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v3.1.9 PRO</span>
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Lossless &amp; Smart-Merge

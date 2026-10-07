@@ -2,11 +2,11 @@
 setlocal EnableExtensions
 chcp 65001 >nul 2>&1
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.6 PRO Setup Wizard
+title Fast Video Cutter and Merger Studio v3.1.9 PRO Setup Wizard
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.9 PRO
 echo    Windows Setup Wizard
 echo ==============================================================
 echo.
@@ -22,13 +22,13 @@ if "%PYTHON_CMD%"=="" (
 
 if "%PYTHON_CMD%"=="" (
     for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
-        if exist "%%~fD\python.exe" set "PYTHON_CMD="%%~fD\python.exe""
+        if exist "%%~fD\python.exe" set "PYTHON_CMD=%%~fD\python.exe"
     )
 )
 
 if "%PYTHON_CMD%"=="" (
     for /d %%D in ("%ProgramFiles%\Python*") do (
-        if exist "%%~fD\python.exe" set "PYTHON_CMD="%%~fD\python.exe""
+        if exist "%%~fD\python.exe" set "PYTHON_CMD=%%~fD\python.exe"
     )
 )
 
@@ -46,5 +46,5 @@ if "%PYTHON_CMD%"=="" (
 )
 
 echo [*] Launching Setup Wizard...
-start "" %PYTHON_CMD% setup_wizard.py
+start "" "%PYTHON_CMD%" setup_wizard.py
 exit /b 0

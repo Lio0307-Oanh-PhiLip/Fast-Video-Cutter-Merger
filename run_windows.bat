@@ -1,24 +1,24 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.6 - Launcher
+title Fast Video Cutter and Merger Studio v3.1.9 - Launcher
 cls
 
 echo ==============================================================
-echo    Fast Video Cutter and Merger Studio v3.1.6 PRO (Windows)
+echo    Fast Video Cutter and Merger Studio v3.1.9 PRO (Windows)
 echo    Lossless Stream Copy Engine - Zero Re-encode Delay
 echo ==============================================================
 echo.
 
 if exist "FastVideoEditor.exe" (
     echo [*] Dang khoi chay FastVideoEditor.exe...
-    start "" "FastVideoEditor.exe"
+    start "" "FastVideoEditor.exe" %*
     exit /b 0
 )
 
 if exist "dist\FastVideoEditor\FastVideoEditor.exe" (
     echo [*] Dang khoi chay tu dist\FastVideoEditor\FastVideoEditor.exe...
-    start "" "dist\FastVideoEditor\FastVideoEditor.exe"
+    start "" "dist\FastVideoEditor\FastVideoEditor.exe" %*
     exit /b 0
 )
 
@@ -60,6 +60,12 @@ if "%PYTHON_EXE%"=="" (
     echo [ERROR] Khong tim thay Python. Vui long cai dat Python tu https://python.org
     pause
     exit /b 1
+)
+
+"%PYTHON_EXE%" -c "import tkinterdnd2, windnd" >nul 2>&1
+if errorlevel 1 (
+    echo [*] Cai dat bo sung thu vien keo tha video (tkinterdnd2, windnd)...
+    "%PYTHON_EXE%" -m pip install tkinterdnd2 windnd --quiet --disable-pip-version-check >nul 2>&1
 )
 
 echo [OK] Su dung Python: %PYTHON_EXE% %PYTHON_ARGS%

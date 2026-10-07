@@ -1,12 +1,12 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.1.6 - Setup Wizard
+title Fast Video Cutter and Merger Studio v3.1.9 - Setup Wizard
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.6 PRO
-echo    Windows GUI Setup Wizard (Next-Next Installation)
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.1.9 PRO
+echo    Windows Setup Wizard
 echo ==============================================================
 echo.
 
@@ -32,17 +32,17 @@ if "%PYTHON_CMD%"=="" (
 )
 
 if "%PYTHON_CMD%"=="" (
-    echo [*] Dang tu dong cai dat Python qua winget...
+    echo [*] Installing Python 3 via Windows Package Manager...
     winget install Python.Python.3.11 --silent --accept-source-agreements --accept-package-agreements >nul 2>&1
     python --version >nul 2>&1 && set "PYTHON_CMD=python"
 )
 
 if "%PYTHON_CMD%"=="" (
-    echo [ERROR] Khong tim thay Python. Vui long cai dat Python 3.9+ tu https://python.org
+    echo [ERROR] Python 3 is required. Please install Python from https://python.org
     pause
     exit /b 1
 )
 
-echo [*] Dang mo Trinh Huong Dan Cai Dat Do Hoa (Setup Wizard)...
-start "" %PYTHON_CMD% setup_wizard.py
+echo [*] Launching Setup Wizard...
+start "" "%PYTHON_CMD%" setup_wizard.py
 exit /b 0

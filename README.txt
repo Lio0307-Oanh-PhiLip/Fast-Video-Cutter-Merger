@@ -1,5 +1,5 @@
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.1.6 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.1.7 PRO (Lossless Stream Copy)
 =============================================================================
 
 1. GIỚI THIỆU:
@@ -7,7 +7,7 @@
   - Tốc độ xử lý siêu tốc (chỉ từ 1 - 3 giây cho video nhiều GB) do không re-encode dữ liệu hình ảnh.
   - Giữ nguyên 100% chất lượng video gốc (Lossless bit-for-bit).
 
-2. ĐIỂM ĐỘT PHÁ TRÊN PHIÊN BẢN v3.1.6 PRO:
+2. ĐIỂM ĐỘT PHÁ TRÊN PHIÊN BẢN v3.1.7 PRO:
   - KHẮC PHỤC TRIỆT ĐỂ LỖI CỬA SỔ TỰ TẮT KHI ĐÓNG GÓI:
     + Cửa sổ `build_windows_setup.bat` luôn giữ nguyên trạng thái (Pause protection) để người dùng xem đầy đủ nhật ký đóng gói.
     + Tự động sao chép file thực thi `FastVideoEditor.exe` ra thư mục gốc.
