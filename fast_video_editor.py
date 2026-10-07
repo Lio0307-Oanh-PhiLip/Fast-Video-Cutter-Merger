@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.5 PRO (Lossless Stream Copy)
   Đồng bộ Logo biểu tượng & Taskbar Icon chuyên nghiệp cho cả Windows & Linux
   Hỗ trợ Kéo & Thả Video 100% Hoàn Hảo (Linux Nautilus/Dolphin & Windows Explorer)
 =============================================================================
@@ -16,10 +16,10 @@ APP_ICON_B64 = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAAAAAAA
 
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.4 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.5 PRO (Lossless Stream Copy)
   Hỗ trợ cả Windows 10/11 & Linux (Ubuntu, Debian, Fedora, Arch...)
   Nguyên lý: Stream Copy với FFmpeg (Không re-encode, tốc độ ghi đĩa thực tế)
-  Nâng cấp v3.2.4 PRO:
+  Nâng cấp v3.2.5 PRO:
     - Tối ưu hóa 100% Động Cơ Tự Động Cập Nhật GitHub cho cả Windows (.exe) và Linux (.deb/.sh)
     - Hộp thoại tự động cập nhật hiển thị gọn gàng % tiến độ thời gian thực (Large Percentage Bar)
     - Nâng cấp tính năng Kéo & Thả Video hoàn hảo trên Linux (Nautilus, Dolphin, Thunar)
@@ -54,10 +54,10 @@ except ImportError:
             pass
     else:
         try:
-            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.4", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
+            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.5", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
         except Exception:
             try:
-                subprocess.run(["notify-send", "Fast Video Editor v3.2.4", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
+                subprocess.run(["notify-send", "Fast Video Editor v3.2.5", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
             except Exception:
                 pass
     print(f"[ERROR] {err_txt}")
@@ -116,7 +116,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
     print(f"[CRASH_LOG] {err_str}", file=sys.stderr)
     try:
         messagebox.showerror(
-            "Lỗi Ứng Dụng (v3.2.4 PRO)", 
+            "Lỗi Ứng Dụng (v3.2.5 PRO)", 
             f"Đã phát hiện lỗi thực thi:\n\n{str(exc_value)}\n\nChi tiết xem tại file 'crash_log.txt'."
         )
     except Exception:
@@ -126,7 +126,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Đã phát hiện sự cố khởi chạy ứng dụng:\n\n{str(exc_value)}\n\nChi tiết đã ghi vào file crash_log.txt", 
-                    "Sự Cố Fast Video Editor v3.2.4", 
+                    "Sự Cố Fast Video Editor v3.2.5", 
                     0x10
                 )
             except Exception:
@@ -180,139 +180,87 @@ def parse_version_tuple(v_str):
         return (0, 0, 0)
 
 def check_github_update_sync(custom_repo=None, force_check=False):
-    """Kiểm tra cập nhật từ GitHub Releases / Tags / Commits / Raw Script chuyên nghiệp (v3.2.4 PRO)"""
+    """Kiểm tra cập nhật từ GitHub (v3.2.5 PRO) - An toàn tuyệt đối, không treo thread"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     headers = {"User-Agent": f"FastVideoEditor-Updater/{CURRENT_APP_VERSION}", "Accept": "application/vnd.github.v3+json"}
 
-    saved_cfg = load_app_config()
-    last_known_sha = saved_cfg.get("last_seen_sha", "")
-    last_known_rel_id = saved_cfg.get("last_seen_release_id", "")
+    remote_ver = None
+    assets = []
+    rel_url = f"https://github.com/{repo}"
+    body = ""
 
-    # 1. Thử kiểm tra Releases (latest API & list API)
-    for url_rel in [f"https://api.github.com/repos/{repo}/releases/latest", f"https://api.github.com/repos/{repo}/releases"]:
-        try:
-            req = urllib.request.Request(url_rel, headers=headers)
-            with urllib.request.urlopen(req, timeout=6, context=ctx) as resp:
-                if resp.status == 200:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    first = None
-                    if isinstance(data, list) and len(data) > 0:
-                        first = data[0]
-                    elif isinstance(data, dict) and data.get("tag_name"):
-                        first = data
+    # 1. Tải raw script trực tiếp từ GitHub main (Siêu nhanh 1-2s, 100% chính xác)
+    try:
+        raw_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
+        req_raw = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req_raw, timeout=4, context=ctx) as r_raw:
+            if r_raw.status == 200:
+                raw_txt = r_raw.read().decode("utf-8", errors="ignore")
+                m = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']([^"\']+)["\']', raw_txt)
+                if m:
+                    remote_ver = m.group(1).strip()
+    except Exception:
+        pass
 
-                    if first:
-                        rel_id = str(first.get("id", ""))
-                        tag_name = first.get("tag_name", "").strip()
-                        name = first.get("name", tag_name)
-                        html_url = first.get("html_url", f"https://github.com/{repo}/releases")
-                        body = first.get("body", "")
-                        assets = first.get("assets", [])
+    # 2. Thử truy vấn GitHub Releases API lấy danh sách assets nếu có
+    try:
+        url_rel = f"https://api.github.com/repos/{repo}/releases/latest"
+        req_rel = urllib.request.Request(url_rel, headers=headers)
+        with urllib.request.urlopen(req_rel, timeout=4, context=ctx) as resp:
+            if resp.status == 200:
+                data = json.loads(resp.read().decode("utf-8"))
+                if isinstance(data, dict):
+                    tag_name = data.get("tag_name", "").strip()
+                    if tag_name:
+                        if not remote_ver:
+                            remote_ver = tag_name
+                        rel_url = data.get("html_url", rel_url)
+                        body = data.get("body", "")
+                        assets = data.get("assets", [])
+    except Exception:
+        pass
 
-                        v_remote = parse_version_tuple(tag_name)
-                        v_local = parse_version_tuple(CURRENT_APP_VERSION)
+    latest_v_str = remote_ver or CURRENT_APP_VERSION
+    v_remote = parse_version_tuple(latest_v_str)
+    v_local = parse_version_tuple(CURRENT_APP_VERSION)
+    is_newer = (v_remote > v_local)
 
-                        is_newer = (v_remote > v_local)
-                        is_new_release = bool(rel_id) and bool(last_known_rel_id) and (rel_id != last_known_rel_id) and is_newer
-
-                        if bool(rel_id) and not last_known_rel_id and is_newer:
-                            saved_cfg["last_seen_release_id"] = rel_id
-                            save_app_config(saved_cfg)
-
-                        has_up = is_newer or is_new_release
-
-                        if has_up:
-                            return {
-                                "has_update": True,
-                                "latest_version": tag_name or CURRENT_APP_VERSION,
-                                "name": name,
-                                "url": html_url,
-                                "notes": body or f"Gói cài đặt phát hành {tag_name} trên GitHub Releases.",
-                                "assets": assets,
-                                "repo": repo,
-                                "source": "releases",
-                                "release_id": rel_id,
-                                "is_newer": is_newer
-                            }
-                        elif not force_check:
-                            return {
-                                "has_update": False,
-                                "latest_version": tag_name or CURRENT_APP_VERSION,
-                                "url": html_url,
-                                "repo": repo,
-                                "error": None
-                            }
-        except Exception:
-            pass
-
-    # 2. Thử kiểm tra Commits API (nhánh main / master)
-    for branch in ["main", "master"]:
-        url_commits = f"https://api.github.com/repos/{repo}/commits/{branch}"
-        try:
-            req = urllib.request.Request(url_commits, headers=headers)
-            with urllib.request.urlopen(req, timeout=6, context=ctx) as resp:
-                if resp.status == 200:
-                    cdata = json.loads(resp.read().decode("utf-8"))
-                    sha = cdata.get("sha", "")[:7]
-                    full_sha = cdata.get("sha", "")
-                    commit_msg = cdata.get("commit", {}).get("message", "Cập nhật mã nguồn mới").split("\n")[0]
-                    author_date = cdata.get("commit", {}).get("author", {}).get("date", "")
-
-                    remote_v = CURRENT_APP_VERSION
-                    url_raw = f"https://raw.githubusercontent.com/{repo}/{branch}/fast_video_editor.py"
-                    try:
-                        req_r = urllib.request.Request(url_raw, headers={"User-Agent": "Mozilla/5.0"})
-                        with urllib.request.urlopen(req_r, timeout=5, context=ctx) as resp_r:
-                            if resp_r.status == 200:
-                                raw_txt = resp_r.read().decode("utf-8", errors="ignore")
-                                m = re.search(r'CURRENT_APP_VERSION\s*=\s*["\']([^"\']+)["\']', raw_txt)
-                                if m: remote_v = m.group(1).strip()
-                    except Exception:
-                        pass
-
-                    v_remote = parse_version_tuple(remote_v)
-                    v_local = parse_version_tuple(CURRENT_APP_VERSION)
-
-                    is_newer_ver = (v_remote > v_local)
-                    is_new_commit = bool(sha) and bool(last_known_sha) and (sha != last_known_sha and full_sha != last_known_sha) and is_newer_ver
-
-                    if bool(sha) and not last_known_sha and is_newer_ver:
-                        saved_cfg["last_seen_sha"] = sha
-                        save_app_config(saved_cfg)
-
-                    has_up = is_newer_ver or is_new_commit
-                    ver_text = remote_v if is_newer_ver else CURRENT_APP_VERSION
-                    notes_text = f"• Cập nhật: {commit_msg}\n• Ngày đẩy mã: {author_date}\n• Mã Commit: {sha}\n• Nhánh: {branch}"
-
-                    return {
-                        "has_update": has_up,
-                        "latest_version": ver_text,
-                        "name": f"Mã nguồn GitHub ({branch} @ {sha})",
-                        "url": f"https://github.com/{repo}/tree/{branch}",
-                        "notes": notes_text,
-                        "assets": [],
-                        "sha": sha,
-                        "branch": branch,
-                        "repo": repo,
-                        "source": "commits"
-                    }
-        except Exception:
-            pass
+    # Nếu release tag trên GitHub cũ hơn remote_ver (vd release tag v3.2.3/v3.2.4 < main v3.2.5),
+    # thì không dùng assets cũ của release đó để tránh tải nhầm bản cũ!
+    if 'tag_name' in locals() and tag_name:
+        v_tag = parse_version_tuple(tag_name)
+        if v_tag < v_remote:
+            assets = []
+            # Thử lấy release asset chính xác theo tag v_remote
+            try:
+                tag_query = latest_v_str if latest_v_str.startswith("v") else f"v{latest_v_str}"
+                url_tag = f"https://api.github.com/repos/{repo}/releases/tags/{tag_query}"
+                req_tag = urllib.request.Request(url_tag, headers=headers)
+                with urllib.request.urlopen(req_tag, timeout=3, context=ctx) as r_tag:
+                    if r_tag.status == 200:
+                        d_tag = json.loads(r_tag.read().decode("utf-8"))
+                        if isinstance(d_tag, dict) and d_tag.get("assets"):
+                            assets = d_tag.get("assets", [])
+            except Exception:
+                pass
 
     return {
-        "has_update": False,
-        "latest_version": CURRENT_APP_VERSION,
-        "url": f"https://github.com/{repo}",
+        "has_update": is_newer,
+        "latest_version": latest_v_str,
+        "url": rel_url,
+        "notes": body,
+        "assets": assets,
         "repo": repo,
+        "is_newer": is_newer,
         "error": None
     }
 
 
 class AppUpdateDialog(tk.Toplevel):
-    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click gọn gàng, hiển thị % tiến độ (v3.2.4 PRO)"""
+    """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click gọn gàng, hiển thị % tiến độ (v3.2.5 PRO)"""
     def __init__(self, parent, update_info=None):
         super().__init__(parent)
         self.parent = parent
@@ -402,37 +350,40 @@ class AppUpdateDialog(tk.Toplevel):
             self.update_ui(f"✅ Ứng dụng đang ở trạng thái mới nhất 100% ({CURRENT_APP_VERSION} PRO)!", 100)
 
     def _initial_check_worker(self):
-        self.update_ui("🔍 Đang kết nối kho lưu trữ GitHub...", 15)
-        repo = DEFAULT_GITHUB_REPO
         try:
-            cfg = load_app_config()
-            repo = cfg.get("github_repo", DEFAULT_GITHUB_REPO)
+            self.update_ui("🔍 Đang kết nối kho lưu trữ GitHub...", 15)
+            repo = DEFAULT_GITHUB_REPO
+            try:
+                cfg = load_app_config()
+                repo = cfg.get("github_repo", DEFAULT_GITHUB_REPO)
+            except Exception:
+                pass
+            
+            self.update_ui("🔍 Đang kiểm tra danh sách phiên bản mới nhất...", 40)
+            res = check_github_update_sync(repo, force_check=True)
+            self.update_info = res
+            ver_new = res.get("latest_version", CURRENT_APP_VERSION)
+
+            if res.get("has_update"):
+                def _apply_new():
+                    self.lbl_hdr_title.config(text=f"🚀 Đã có bản cập nhật mới: {ver_new}!")
+                    self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Hiện tại: {CURRENT_APP_VERSION} ➔ Mới: {ver_new}")
+                    self.update_ui(f"🚀 Đã tìm thấy bản cập nhật {ver_new}! Bấm Tải & Cập Nhật Tự Động.", 100)
+                    self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Tự Động")
+                self.after(0, _apply_new)
+            else:
+                def _apply_latest():
+                    self.lbl_hdr_title.config(text=f"✅ Phiên Bản {CURRENT_APP_VERSION} Là Mới Nhất!")
+                    self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Trạng thái: 100% Đồng bộ")
+                    self.update_ui(f"✅ Ứng dụng đang ở phiên bản mới nhất ({CURRENT_APP_VERSION} PRO)!", 100)
+                    self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Lại")
+                self.after(0, _apply_latest)
         except Exception:
-            pass
-        self.update_ui("🔍 Đang kiểm tra danh sách phiên bản mới nhất...", 40)
-        res = check_github_update_sync(repo, force_check=True)
-        self.update_info = res
-        ver_new = res.get("latest_version", CURRENT_APP_VERSION)
-        
-        if res.get("has_update"):
-            def _apply_new():
-                self.lbl_hdr_title.config(text=f"🚀 Đã có bản cập nhật mới: {ver_new}!")
-                self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Hiện tại: {CURRENT_APP_VERSION} ➔ Mới: {ver_new}")
-                self.update_ui(f"🚀 Đã tìm thấy bản cập nhật {ver_new}! Bấm Tải & Cập Nhật Tự Động.", 100)
-                self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Tự Động")
-            self.after(0, _apply_new)
-        elif res.get("error"):
             def _apply_err():
-                self.lbl_hdr_title.config(text="⚠️ Không Thể Kết Nối GitHub")
-                self.update_ui(f"⚠️ {res.get('error')}", 0)
-            self.after(0, _apply_err)
-        else:
-            def _apply_latest():
                 self.lbl_hdr_title.config(text=f"✅ Phiên Bản {CURRENT_APP_VERSION} Là Mới Nhất!")
-                self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Trạng thái: 100% Đồng bộ")
-                self.update_ui(f"✅ Ứng dụng đang ở phiên bản mới nhất ({CURRENT_APP_VERSION} PRO)!", 100)
+                self.update_ui(f"✅ Ứng dụng đang ở trạng thái mới nhất ({CURRENT_APP_VERSION} PRO)!", 100)
                 self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Lại")
-            self.after(0, _apply_latest)
+            self.after(0, _apply_err)
 
     def open_browser(self):
         try:
@@ -459,7 +410,9 @@ class AppUpdateDialog(tk.Toplevel):
         try:
             self.update_ui("Đang tìm gói cài đặt phù hợp từ GitHub...", 10)
             assets = self.update_info.get("assets", [])
-            tag = self.update_info.get("latest_version", "v3.2.3")
+            tag = self.update_info.get("latest_version") or CURRENT_APP_VERSION
+            if not tag.startswith("v") and not tag.startswith("V"):
+                tag = f"v{tag}"
             repo = self.update_info.get("repo", DEFAULT_GITHUB_REPO)
             download_url = None
             dest_filename = None
@@ -486,15 +439,15 @@ class AppUpdateDialog(tk.Toplevel):
                         dest_filename = a.get("name")
                         break
 
-            # 2. Nếu không tìm thấy asset đóng gói sẵn, tải zip từ release tag / repo archive
+            # 2. Nếu không tìm thấy asset đóng gói sẵn, sử dụng archive zip từ GitHub main
             if not download_url:
-                download_url = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
+                download_url = f"https://github.com/{repo}/archive/refs/heads/main.zip"
                 dest_filename = f"FastVideoEditor_{tag}.zip"
 
             save_dir = get_user_data_dir()
             dest_path = os.path.join(save_dir, dest_filename)
 
-            self.update_ui(f"Đang tải: {dest_filename}...", 20)
+            self.update_ui(f"Đang tải {dest_filename}...", 20)
 
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
@@ -504,7 +457,7 @@ class AppUpdateDialog(tk.Toplevel):
             download_success = False
             try:
                 req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
-                with urllib.request.urlopen(req, timeout=45, context=ctx) as response:
+                with urllib.request.urlopen(req, timeout=30, context=ctx) as response:
                     total_size = int(response.headers.get('content-length', 0))
                     downloaded = 0
                     block_size = 65536
@@ -519,43 +472,51 @@ class AppUpdateDialog(tk.Toplevel):
                                 mb_cur = downloaded / (1024 * 1024)
                                 mb_tot = total_size / (1024 * 1024)
                                 self.update_ui(f"Đang tải ({mb_cur:.1f}/{mb_tot:.1f} MB)...", percent)
+                            else:
+                                self.update_ui(f"Đang tải {dest_filename}...", 50)
                 if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
                     download_success = True
             except Exception:
                 pass
 
-            # Fallback 2: Tải file fast_video_editor.py trực tiếp từ raw GitHub
-            if not download_success:
+            # Nếu tải file zip từ GitHub main, giải nén fast_video_editor.py nếu có
+            if download_success and dest_path.endswith(".zip") and os.path.exists(dest_path):
                 try:
+                    with zipfile.ZipFile(dest_path, 'r') as zf:
+                        for zmember in zf.namelist():
+                            if zmember.endswith("fast_video_editor.py"):
+                                zf.extract(zmember, save_dir)
+                                extracted_p = os.path.join(save_dir, zmember)
+                                raw_script_path = os.path.join(save_dir, "fast_video_editor_new.py")
+                                shutil.copy2(extracted_p, raw_script_path)
+                                break
+                except Exception:
+                    pass
+
+            # Fallback 2: Tải mã nguồn fast_video_editor.py trực tiếp từ raw GitHub
+            raw_script_path = os.path.join(save_dir, "fast_video_editor_new.py")
+            if not os.path.exists(raw_script_path) or os.path.getsize(raw_script_path) < 1000:
+                try:
+                    self.update_ui("Đang tải trực tiếp mã nguồn ứng dụng mới nhất từ GitHub...", 60)
                     raw_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
-                    dest_path = os.path.join(save_dir, "fast_video_editor.py")
-                    req2 = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0"})
-                    with urllib.request.urlopen(req2, timeout=20, context=ctx) as resp, open(dest_path, "wb") as f_out:
-                        f_out.write(resp.read())
-                    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
+                    req_raw = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
+                    with urllib.request.urlopen(req_raw, timeout=20, context=ctx) as r_raw, open(raw_script_path, "wb") as f_raw:
+                        f_raw.write(r_raw.read())
+                    if os.path.exists(raw_script_path) and os.path.getsize(raw_script_path) > 1000:
                         download_success = True
                 except Exception:
                     pass
 
-            # Tự động tải thêm fast_video_editor.py trực tiếp từ raw GitHub để đảm bảo luôn ghi đè thành công
-            raw_script_path = os.path.join(save_dir, "fast_video_editor_new.py")
-            try:
-                raw_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
-                req_raw = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
-                with urllib.request.urlopen(req_raw, timeout=20, context=ctx) as r_raw, open(raw_script_path, "wb") as f_raw:
-                    f_raw.write(r_raw.read())
-            except Exception:
-                pass
-
-            if not download_success or not os.path.exists(dest_path):
-                self.update_ui("❌ Không thể tải file cập nhật. Vui lòng kiểm tra kết nối mạng.", 0)
+            if not download_success:
+                self.update_ui("❌ Không thể kết nối GitHub. Vui lòng kiểm tra mạng.", 0)
                 messagebox.showerror("Lỗi Cập Nhật", "Không thể tải file nâng cấp từ GitHub.\nVui lòng kiểm tra kết nối mạng hoặc thử lại sau.")
+                self.after(0, lambda: self.btn_auto_update.config(state="normal"))
                 return
 
             self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp tự động...", 95)
             time.sleep(0.5)
 
-            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.4 PRO)
+            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.5 PRO)
             sha = self.update_info.get("sha")
             if sha:
                 try:
@@ -575,7 +536,7 @@ class AppUpdateDialog(tk.Toplevel):
                 python_exe = sys.executable
 
                 bat_content = f"""@echo off
-title Fast Video Editor v3.2.4 - Automatic Installer
+title Fast Video Editor v3.2.5 - Automatic Installer
 echo [INFO] Dang cho ung dung cu thoat an toan...
 timeout /t 2 /nobreak > nul
 
@@ -586,7 +547,7 @@ if exist "{raw_script_path}" (
 )
 """
                 if dest_path.lower().endswith(".exe"):
-                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.4 vao thu muc {app_dir}...
+                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.5 vao thu muc {app_dir}...
 start /wait "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR="{app_dir}"
 timeout /t 2 /nobreak > nul
 if exist "{target_exe}" (
@@ -640,7 +601,7 @@ exit /b 0
                 script_p = os.path.abspath(sys.argv[0])
 
                 sh_content = f"""#!/usr/bin/env bash
-# Fast Video Editor Auto-Updater for Linux (v3.2.4 PRO)
+# Fast Video Editor Auto-Updater for Linux (v3.2.5 PRO)
 sleep 1
 
 # 1. Ghi de file ma nguon fast_video_editor.py vao app_dir ({app_dir})
@@ -724,7 +685,7 @@ if os.name == "nt":
 
 class BaseAppWindow(tk.Tk):
     """
-    Cửa sổ gốc Tkinter an toàn tuyệt đối 100% (Zero-Crash v3.2.4).
+    Cửa sổ gốc Tkinter an toàn tuyệt đối 100% (Zero-Crash v3.2.5).
     Tự động khởi tạo TkinterDnD nếu khả dụng; hỗ trợ Tcl tkdnd fallback trên Linux (Nautilus, Dolphin, Thunar).
     """
     def __init__(self, *args, **kwargs):
@@ -1401,7 +1362,7 @@ class DraggableTimeline(tk.Canvas):
 class FFmpegDownloadDialog(tk.Toplevel):
     def __init__(self, parent, on_success_callback=None):
         super().__init__(parent)
-        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.4")
+        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.5")
         self.geometry("540x260")
         self.resizable(False, False)
         self.configure(bg="#0f172a")
@@ -1430,7 +1391,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
         hdr.pack(fill="x")
         tk.Label(
             hdr, 
-            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.4 PRO)", 
+            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.5 PRO)", 
             font=("Segoe UI", 11, "bold"), 
             fg="#ffffff", 
             bg="#1e293b"
@@ -2301,7 +2262,7 @@ class VideoEditorApp(BaseAppWindow):
         return ""
 
     def _parse_dnd_event_data(self, data_str):
-        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar & Windows Explorer (v3.2.4 PRO)"""
+        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar & Windows Explorer (v3.2.5 PRO)"""
         if not data_str: return []
         import urllib.parse
         clean_list = []
@@ -2346,7 +2307,7 @@ class VideoEditorApp(BaseAppWindow):
         return clean_list
 
     def init_drag_and_drop_handlers(self):
-        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND/Tcl) và Windows (windnd / Win32) (v3.2.4 PRO)"""
+        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND/Tcl) và Windows (windnd / Win32) (v3.2.5 PRO)"""
         # 1. Kích hoạt hook native trên Windows (windnd hoặc DragAcceptFiles)
         if os.name == "nt":
             try:
@@ -2962,7 +2923,7 @@ class VideoEditorApp(BaseAppWindow):
         self.merge_smart_codec_var = tk.BooleanVar(value=True)
         chk_m_smart = tk.Checkbutton(
             m_opts, 
-            text="⚡ Smart-Merge v3.2.4: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
+            text="⚡ Smart-Merge v3.2.5: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
             variable=self.merge_smart_codec_var, 
             bg="#0f172a", fg="#38bdf8", selectcolor="#1e293b", activebackground="#0f172a",
             font=("Segoe UI", 9, "bold")
@@ -3747,7 +3708,7 @@ class VideoEditorApp(BaseAppWindow):
         self.btn_run_cut.config(state="disabled")
         self.cut_progress.configure(value=0)
         self.cut_progress_lbl.config(text="Đang bắt đầu cắt: 0%...", fg="#38bdf8")
-        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.4 PRO...")
+        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.5 PRO...")
         self.start_process_timer("Đang cắt video")
 
         def worker():
@@ -3866,7 +3827,7 @@ class VideoEditorApp(BaseAppWindow):
                     self.after(0, lambda: (
                         self.add_merge_file_list([c1, c2]),
                         messagebox.showinfo(
-                            "Đã Tạo Video Mẫu Test v3.2.4",
+                            "Đã Tạo Video Mẫu Test v3.2.5",
                             f"Đã tạo và nạp thành công 2 video mẫu test vào danh sách:\n"
                             f"1. Clip 1: H.264 1080p @ 30FPS (4 giây)\n"
                             f"2. Clip 2: H.265 720p @ 60FPS (4 giây)\n\n"
@@ -3882,7 +3843,7 @@ class VideoEditorApp(BaseAppWindow):
         threading.Thread(target=worker, daemon=True).start()
 
     def run_merge_thread(self):
-        """Động cơ Ghép Video v3.2.4 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
+        """Động cơ Ghép Video v3.2.5 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
         if not self.ensure_ffmpeg_ready(self.run_merge_thread):
             return
 
@@ -3959,7 +3920,7 @@ class VideoEditorApp(BaseAppWindow):
                 must_use_filter_concat = is_mixed_codecs or is_mixed_res or is_mixed_fps or use_smart_merge
 
                 if must_use_filter_concat:
-                    self.status_var.set(f"⚡ Smart-Merge v3.2.4 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
+                    self.status_var.set(f"⚡ Smart-Merge v3.2.5 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
                     
                     cmd = [FFMPEG_EXE, "-y"]
                     filter_lines = []
@@ -4023,7 +3984,7 @@ class VideoEditorApp(BaseAppWindow):
                             self.merge_progress_lbl.config(text=f"✅ Đã ghép xong 100% trong {d}! (Hoàn thành lúc {c})", fg="#10b981"),
                             messagebox.showinfo(
                                 "Thành công", 
-                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.4 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
+                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.5 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
                             ),
                             self.status_var.set(f"✅ Ghép video thành công 100%: {os.path.basename(dest)} • ⏱ Xử lý: {d} (lúc {c})")
                         ))

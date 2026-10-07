@@ -27,10 +27,10 @@ def get_app_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 class WindowsSetupWizard(tk.Tk):
-    """Trình cài đặt tương tác chuyên nghiệp dạng Next -> Next -> Install -> Finish (v3.2.4 PRO)"""
+    """Trình cài đặt tương tác chuyên nghiệp dạng Next -> Next -> Install -> Finish (v3.2.5 PRO)"""
     def __init__(self):
         super().__init__()
-        self.title("Cài Đặt Fast Video Cutter & Merger Studio v3.2.4 PRO")
+        self.title("Cài Đặt Fast Video Cutter & Merger Studio v3.2.5 PRO")
         self.geometry("660x490")
         self.minsize(620, 460)
         self.resizable(False, False)
@@ -146,18 +146,18 @@ class WindowsSetupWizard(tk.Tk):
 
         tk.Label(
             self.body_frame, 
-            text="Chào mừng bạn đến với Fast Video Cutter & Merger Studio v3.2.4 PRO!", 
+            text="Chào mừng bạn đến với Fast Video Cutter & Merger Studio v3.2.5 PRO!", 
             font=("Segoe UI", 11, "bold"), 
             fg="#38bdf8", bg="#0f172a"
         ).pack(anchor="w", pady=(0, 8))
 
         desc = (
             "Trình hướng dẫn này sẽ hỗ trợ bạn cài đặt ứng dụng Fast Video Editor vào máy tính.\n\n"
-            "Tính năng nổi bật trong bản nâng cấp v3.2.4 PRO:\n"
+            "Tính năng nổi bật trong bản nâng cấp v3.2.5 PRO:\n"
             "  • Cắt và Ghép video siêu tốc với công nghệ Lossless Stream Copy (1-3 giây).\n"
             "  • Không làm nóng máy hay quá tải CPU/GPU, giữ nguyên 100% chất lượng gốc.\n"
             "  • Kéo thả video đa luồng chống treo máy (Hỗ trợ kéo nhiều video cùng lúc trên Windows & Linux).\n"
-            "  • Động cơ Smart-Merge v3.2.4 tự động xử lý hỗn hợp H.264 + H.265 và âm thanh CCTV.\n"
+            "  • Động cơ Smart-Merge v3.2.5 tự động xử lý hỗn hợp H.264 + H.265 và âm thanh CCTV.\n"
             "  • Tích hợp sẵn bộ giải mã FFmpeg Lossless tự động.\n\n"
             "Nhấn [Tiếp Tục >] để bắt đầu quá trình cài đặt."
         )
