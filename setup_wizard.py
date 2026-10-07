@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.0 PRO - Windows Setup Wizard
+  Fast Video Cutter & Merger Studio v3.2.2 PRO - Windows Setup Wizard
   Trình cài đặt dạng Next-Next-Install-Finish đầy đủ chuẩn Windows 10 / 11
 =============================================================================
 """

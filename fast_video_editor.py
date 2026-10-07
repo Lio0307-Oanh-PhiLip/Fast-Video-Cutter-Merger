@@ -403,7 +403,7 @@ class AppUpdateDialog(tk.Toplevel):
         try:
             self.update_ui("Đang tìm gói cài đặt phù hợp từ GitHub...", 10)
             assets = self.update_info.get("assets", [])
-            tag = self.update_info.get("latest_version", "latest")
+            tag = self.update_info.get("latest_version", "v3.2.2")
             repo = self.update_info.get("repo", DEFAULT_GITHUB_REPO)
             download_url = None
             dest_filename = None
@@ -430,7 +430,7 @@ class AppUpdateDialog(tk.Toplevel):
                         dest_filename = a.get("name")
                         break
 
-            # 2. Nếu không có asset đóng gói sẵn, tải zip từ release tag / repo archive
+            # 2. Nếu không tìm thấy asset đóng gói sẵn, tải zip từ release tag / repo archive
             if not download_url:
                 download_url = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
                 dest_filename = f"FastVideoEditor_{tag}.zip"
@@ -444,17 +444,18 @@ class AppUpdateDialog(tk.Toplevel):
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
 
-            req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
+            # Tải file trực tiếp với đếm phần trăm tiến độ %
+            download_success = False
             try:
-                with urllib.request.urlopen(req, timeout=30, context=ctx) as response:
+                req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 FastVideoEditor-AutoUpdater"})
+                with urllib.request.urlopen(req, timeout=45, context=ctx) as response:
                     total_size = int(response.headers.get('content-length', 0))
                     downloaded = 0
                     block_size = 65536
                     with open(dest_path, 'wb') as out_file:
                         while True:
                             buffer = response.read(block_size)
-                            if not buffer:
-                                break
+                            if not buffer: break
                             downloaded += len(buffer)
                             out_file.write(buffer)
                             if total_size > 0:
@@ -462,18 +463,33 @@ class AppUpdateDialog(tk.Toplevel):
                                 mb_cur = downloaded / (1024 * 1024)
                                 mb_tot = total_size / (1024 * 1024)
                                 self.update_ui(f"Đang tải ({mb_cur:.1f}/{mb_tot:.1f} MB)...", percent)
+                if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
+                    download_success = True
             except Exception:
-                # Fallback tải raw script nếu zip tag lỗi
-                download_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
-                dest_path = os.path.join(save_dir, "fast_video_editor.py")
-                req2 = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req2, timeout=20, context=ctx) as resp, open(dest_path, "wb") as f_out:
-                    f_out.write(resp.read())
+                pass
 
-            self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp...", 95)
+            # Fallback 2: Tải file fast_video_editor.py trực tiếp từ raw GitHub
+            if not download_success:
+                try:
+                    raw_url = f"https://raw.githubusercontent.com/{repo}/main/fast_video_editor.py"
+                    dest_path = os.path.join(save_dir, "fast_video_editor.py")
+                    req2 = urllib.request.Request(raw_url, headers={"User-Agent": "Mozilla/5.0"})
+                    with urllib.request.urlopen(req2, timeout=20, context=ctx) as resp, open(dest_path, "wb") as f_out:
+                        f_out.write(resp.read())
+                    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
+                        download_success = True
+                except Exception:
+                    pass
+
+            if not download_success or not os.path.exists(dest_path):
+                self.update_ui("❌ Không thể tải file cập nhật. Vui lòng kiểm tra kết nối mạng.", 0)
+                messagebox.showerror("Lỗi Cập Nhật", "Không thể tải file nâng cấp từ GitHub.\nVui lòng kiểm tra kết nối mạng hoặc thử lại sau.")
+                return
+
+            self.update_ui("✅ Đã tải xong! Đang khởi chạy nâng cấp tự động...", 95)
             time.sleep(0.5)
 
-            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.0 PRO)
+            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.2 PRO)
             sha = self.update_info.get("sha")
             if sha:
                 try:
@@ -487,41 +503,62 @@ class AppUpdateDialog(tk.Toplevel):
             target_script = os.path.join(app_dir, "fast_video_editor.py")
 
             if os.name == "nt":
-                if dest_path.lower().endswith(".exe"):
-                    subprocess.Popen([dest_path], shell=False)
-                    self.after(500, lambda: (self.parent.destroy(), sys.exit(0)))
-                    return
-                elif dest_path.lower().endswith(".zip"):
-                    shutil.unpack_archive(dest_path, save_dir)
-                    # Copy toan bo tap tin ma nguon moi tu file zip ve thu muc app_dir
-                    for root_d, _, files in os.walk(save_dir):
-                        if "fast_video_editor.py" in files:
-                            for item in files:
-                                s_file = os.path.join(root_d, item)
-                                d_file = os.path.join(app_dir, item)
-                                if os.path.abspath(s_file) != os.path.abspath(d_file):
-                                    try: shutil.copy2(s_file, d_file)
-                                    except Exception: pass
-                            break
-                else:
-                    if os.path.abspath(dest_path) != os.path.abspath(target_script):
-                        try: shutil.copy2(dest_path, target_script)
-                        except Exception: pass
+                # Tạo file kịch bản batch nâng cấp độc lập (Detached Batch Updater) để KHÔNG BAO GIỜ bị khóa file đang chạy
+                updater_bat = os.path.join(save_dir, "apply_update.bat")
+                target_exe = os.path.join(app_dir, "FastVideoEditor.exe")
+                python_exe = sys.executable
 
-                self.update_ui("✅ Đã cập nhật thành công v3.2.0! Đang tự động khởi chạy...", 100)
-                time.sleep(0.8)
+                bat_content = f"""@echo off
+title Fast Video Editor v3.2.2 - Automatic Installer
+echo [INFO] Dang cho ung dung cu thoat an toan...
+timeout /t 2 /nobreak > nul
+"""
+                if dest_path.lower().endswith(".exe"):
+                    bat_content += f"""echo [INFO] Dang khoi chay trinh cai dat v3.2.2...
+start "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP-
+timeout /t 3 /nobreak > nul
+if exist "{target_exe}" (
+    start "" "{target_exe}"
+)
+exit /b 0
+"""
+                elif dest_path.lower().endswith(".zip"):
+                    bat_content += f"""echo [INFO] Dang giải nén va cap nhat file...
+powershell -NoProfile -Command "Expand-Archive -Path '{dest_path}' -DestinationPath '{app_dir}' -Force"
+if exist "{target_exe}" (
+    start "" "{target_exe}"
+) else (
+    start "" "{python_exe}" "{target_script}"
+)
+exit /b 0
+"""
+                else:
+                    bat_content += f"""echo [INFO] Dang cap nhat fast_video_editor.py...
+copy /y "{dest_path}" "{target_script}"
+start "" "{python_exe}" "{target_script}"
+exit /b 0
+"""
+
+                with open(updater_bat, "w", encoding="utf-8") as f_bat:
+                    f_bat.write(bat_content)
+
+                self.update_ui("✅ Đã khởi chạy kịch bản nâng cấp! Đang tự động mở lại...", 100)
+                time.sleep(0.5)
+
+                # Khởi chạy kịch bản batch độc lập
                 try:
-                    if getattr(sys, 'frozen', False):
-                        subprocess.Popen([sys.executable] + sys.argv[1:])
-                    else:
-                        python_exe = sys.executable
-                        script_p = os.path.abspath(sys.argv[0])
-                        subprocess.Popen([python_exe, script_p] + sys.argv[1:])
-                    self.after(400, lambda: (self.parent.destroy(), sys.exit(0)))
-                    return
+                    if os.path.exists(updater_bat):
+                        subprocess.Popen(["cmd.exe", "/c", updater_bat], creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
                 except Exception:
-                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã nâng cấp lên bản {tag} thành công!\nVui lòng mở lại ứng dụng.")
+                    try:
+                        os.startfile(dest_path)
+                    except Exception:
+                        pass
+
+                self.after(300, lambda: (self.parent.destroy(), self.destroy(), sys.exit(0)))
+                return
             else:
+                # Linux Updater
                 if dest_path.lower().endswith(".deb"):
                     try: subprocess.Popen(["pkexec", "dpkg", "-i", dest_path])
                     except Exception: subprocess.Popen(["xdg-open", dest_path])
@@ -535,17 +572,13 @@ class AppUpdateDialog(tk.Toplevel):
                     python_exe = sys.executable
                     script_p = os.path.abspath(sys.argv[0])
                     subprocess.Popen([python_exe, script_p] + sys.argv[1:])
-                    self.after(400, lambda: (self.parent.destroy(), sys.exit(0)))
+                    self.after(300, lambda: (self.parent.destroy(), self.destroy(), sys.exit(0)))
                     return
                 except Exception:
-                    messagebox.showinfo("Cập Nhật Hoàn Tất", f"Đã nâng cấp lên bản {tag} thành công!\nVui lòng mở lại ứng dụng.")
-
-            self.update_ui("Hoàn tất cập nhật!", 100)
-            self.after(800, self.destroy)
-
+                    pass
         except Exception as e:
-            self.update_ui(f"Lỗi tải: {str(e)[:40]}", 0)
-            messagebox.showerror("Lỗi Cập Nhật", f"Không thể tự động tải bản cập nhật:\n{str(e)}\n\nVui lòng bấm 'Mở GitHub' để tải thủ công.")
+            self.update_ui(f"❌ Lỗi nâng cấp: {str(e)[:40]}", 0)
+            messagebox.showerror("Lỗi Cập Nhật", f"Không thể hoàn tất tự động nâng cấp:\n{e}\n\nVui lòng bấm 'Mở GitHub' để tải thủ công.")
             self.btn_auto_update.config(state="normal", bg="#4f46e5")
             self.btn_browser.config(state="normal")
             self.is_downloading = False

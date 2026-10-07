@@ -48,15 +48,16 @@ jobs:
 
       - name: Archive Portable Zip
         run: |
-          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.1-Windows-Portable.zip -Force
+          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.2-Windows-Portable.zip -Force
 
       - name: Prepare Windows Release Binaries
         run: |
           mkdir build_assets
-          if (Test-Path "Output\FastVideoEditor_Setup.exe") { Copy-Item "Output\FastVideoEditor_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
-          if (Test-Path "Output\FastVideoEditor_v3.2.0_Setup.exe") { Copy-Item "Output\FastVideoEditor_v3.2.0_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
-          if (Test-Path "Output\FastVideoEditor_v3.2.1_Setup.exe") { Copy-Item "Output\FastVideoEditor_v3.2.1_Setup.exe" "build_assets\FastVideoEditor-v3.2.1-Setup.exe" }
-          Copy-Item "FastVideoEditor-v3.2.1-Windows-Portable.zip" "build_assets\"
+          Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor-v3.2.2-Setup.exe"
+          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.2-Setup.exe")) {
+            Get-ChildItem -Path "dist\FastVideoEditor\FastVideoEditor.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor.exe"
+          }
+          Copy-Item "FastVideoEditor-v3.2.2-Windows-Portable.zip" "build_assets\"
           Copy-Item "fast_video_editor.py" "build_assets\"
 
       - name: Upload Windows Artifacts
@@ -85,7 +86,7 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="v3.2.1"
+            TAG_NAME="v3.2.2"
           fi
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
 
@@ -95,12 +96,12 @@ jobs:
           tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
           name: "Fast Video Cutter & Merger Studio ${{ steps.get_version.outputs.TAG_NAME }} PRO"
           body: |
-            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.1 PRO)**
+            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.2 PRO)**
             
             ### 📌 Thông tin bản cập nhật ${{ steps.get_version.outputs.TAG_NAME }} PRO:
-            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.1-Setup.exe`)
-            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.1-Windows-Portable.zip`)
-            - 🔄 Cập nhật động cơ Auto-Update 1-Click nâng cấp ứng dụng ngay trong giao diện Desktop
+            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.2-Setup.exe`)
+            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.2-Windows-Portable.zip`)
+            - 🔄 Cập nhật động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp không sợ bị khóa file
             - 🎯 Khắc phục 100% tràn chữ/che khuất thông tin phiên bản ở cửa sổ thu nhỏ
           files: release_files/*
           draft: false

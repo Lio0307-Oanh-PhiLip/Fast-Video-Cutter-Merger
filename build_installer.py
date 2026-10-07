@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.0 PRO
+  Fast Video Cutter & Merger Studio v3.2.2 PRO
   Automated 1-Click Installer Builder (PyInstaller + Inno Setup 6 Auto-Setup)
 =============================================================================
 """
