@@ -313,11 +313,11 @@ def check_github_update_sync(custom_repo=None, force_check=False):
 
 class AppUpdateDialog(tk.Toplevel):
     """Hộp thoại Tải & Tự Động Nâng Cấp Ứng Dụng Từ GitHub 1-Click gọn gàng, hiển thị % tiến độ (v3.2.4 PRO)"""
-    def __init__(self, parent, update_info):
+    def __init__(self, parent, update_info=None):
         super().__init__(parent)
         self.parent = parent
-        self.update_info = update_info
-        ver = update_info.get("latest_version", "Mới")
+        self.update_info = update_info or {}
+        ver = self.update_info.get("latest_version", CURRENT_APP_VERSION)
         self.title(f"⚡ Cập Nhật Fast Video Editor - {ver}")
         self.geometry("520x260")
         self.minsize(480, 240)
@@ -336,16 +336,18 @@ class AppUpdateDialog(tk.Toplevel):
         hdr = tk.Frame(self, bg="#1e1b4b", padx=16, pady=12)
         hdr.pack(fill="x")
 
-        tk.Label(
-            hdr, text=f"🚀 Đã Có Bản Cập Nhật Mới: {ver}", 
+        self.lbl_hdr_title = tk.Label(
+            hdr, text=f"🚀 Cập Nhật Ứng Dụng (Bản Hiện Tại: {CURRENT_APP_VERSION})", 
             font=("Segoe UI", 12, "bold"), fg="#818cf8", bg="#1e1b4b"
-        ).pack(anchor="w")
+        )
+        self.lbl_hdr_title.pack(anchor="w")
 
-        repo_name = update_info.get("repo", DEFAULT_GITHUB_REPO)
-        tk.Label(
-            hdr, text=f"Kho lưu trữ: github.com/{repo_name}  •  Hiện tại: {CURRENT_APP_VERSION} ➔ Mới: {ver}", 
+        repo_name = self.update_info.get("repo", DEFAULT_GITHUB_REPO)
+        self.lbl_hdr_sub = tk.Label(
+            hdr, text=f"Kho lưu trữ: github.com/{repo_name}  •  Phiên bản: {CURRENT_APP_VERSION}", 
             font=("Segoe UI", 9), fg="#cbd5e1", bg="#1e1b4b"
-        ).pack(anchor="w", pady=(2, 0))
+        )
+        self.lbl_hdr_sub.pack(anchor="w", pady=(2, 0))
 
         # Body - Tối giản gọn gàng, tập trung hiển thị % tiến độ cập nhật
         body = tk.Frame(self, bg="#0f172a", padx=20, pady=16)
@@ -353,12 +355,12 @@ class AppUpdateDialog(tk.Toplevel):
 
         self.lbl_percent_big = tk.Label(
             body, text="0%", 
-            font=("Segoe UI", 24, "bold"), fg="#38bdf8", bg="#0f172a"
+            font=("Segoe UI", 26, "bold"), fg="#38bdf8", bg="#0f172a"
         )
         self.lbl_percent_big.pack(anchor="center", pady=(0, 2))
 
         self.lbl_status = tk.Label(
-            body, text="Sẵn sàng tải bản cập nhật tự động 1-click...", 
+            body, text="🔍 Đang kết nối GitHub và kiểm tra bản cập nhật...", 
             font=("Segoe UI", 9), fg="#94a3b8", bg="#0f172a", justify="center"
         )
         self.lbl_status.pack(anchor="center", pady=(0, 8))
@@ -371,7 +373,7 @@ class AppUpdateDialog(tk.Toplevel):
         footer.pack(fill="x", side="bottom")
 
         self.btn_close = tk.Button(
-            footer, text="Để Sau", bg="#334155", fg="#cbd5e1", 
+            footer, text="Đóng", bg="#334155", fg="#cbd5e1", 
             font=("Segoe UI", 9), relief="flat", command=self.destroy
         )
         self.btn_close.pack(side="left")
@@ -387,6 +389,50 @@ class AppUpdateDialog(tk.Toplevel):
             font=("Segoe UI", 9, "bold"), relief="flat", command=self.start_auto_download
         )
         self.btn_auto_update.pack(side="right")
+
+        # Khởi chạy kiểm tra cập nhật nếu chưa mở từ thông báo trước đó
+        if not update_info:
+            threading.Thread(target=self._initial_check_worker, daemon=True).start()
+        elif update_info.get("has_update"):
+            ver_new = update_info.get("latest_version", CURRENT_APP_VERSION)
+            self.lbl_hdr_title.config(text=f"🚀 Tìm thấy bản cập nhật mới: {ver_new}!")
+            self.update_ui(f"🚀 Đã có bản cập nhật {ver_new}! Bấm Tải & Cập Nhật Tự Động để nâng cấp.", 100)
+        else:
+            self.lbl_hdr_title.config(text=f"✅ Phiên Bản Hiện Tại ({CURRENT_APP_VERSION}) Là Mới Nhất!")
+            self.update_ui(f"✅ Ứng dụng đang ở trạng thái mới nhất 100% ({CURRENT_APP_VERSION} PRO)!", 100)
+
+    def _initial_check_worker(self):
+        self.update_ui("🔍 Đang kết nối kho lưu trữ GitHub...", 15)
+        repo = DEFAULT_GITHUB_REPO
+        try:
+            cfg = load_app_config()
+            repo = cfg.get("github_repo", DEFAULT_GITHUB_REPO)
+        except Exception:
+            pass
+        self.update_ui("🔍 Đang kiểm tra danh sách phiên bản mới nhất...", 40)
+        res = check_github_update_sync(repo, force_check=True)
+        self.update_info = res
+        ver_new = res.get("latest_version", CURRENT_APP_VERSION)
+        
+        if res.get("has_update"):
+            def _apply_new():
+                self.lbl_hdr_title.config(text=f"🚀 Đã có bản cập nhật mới: {ver_new}!")
+                self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Hiện tại: {CURRENT_APP_VERSION} ➔ Mới: {ver_new}")
+                self.update_ui(f"🚀 Đã tìm thấy bản cập nhật {ver_new}! Bấm Tải & Cập Nhật Tự Động.", 100)
+                self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Tự Động")
+            self.after(0, _apply_new)
+        elif res.get("error"):
+            def _apply_err():
+                self.lbl_hdr_title.config(text="⚠️ Không Thể Kết Nối GitHub")
+                self.update_ui(f"⚠️ {res.get('error')}", 0)
+            self.after(0, _apply_err)
+        else:
+            def _apply_latest():
+                self.lbl_hdr_title.config(text=f"✅ Phiên Bản {CURRENT_APP_VERSION} Là Mới Nhất!")
+                self.lbl_hdr_sub.config(text=f"Kho lưu trữ: github.com/{repo}  •  Trạng thái: 100% Đồng bộ")
+                self.update_ui(f"✅ Ứng dụng đang ở phiên bản mới nhất ({CURRENT_APP_VERSION} PRO)!", 100)
+                self.btn_auto_update.config(state="normal", text="⚡ Tải & Cập Nhật Lại")
+            self.after(0, _apply_latest)
 
     def open_browser(self):
         try:
@@ -2093,50 +2139,16 @@ class VideoEditorApp(BaseAppWindow):
     def open_github_releases(self):
         if getattr(self, "_update_dialog_active", False):
             return
-        if getattr(self, "last_update_info", None):
-            self._update_dialog_active = True
-            dlg = AppUpdateDialog(self, self.last_update_info)
-            dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
-        else:
-            self.check_updates_manual()
+        self._update_dialog_active = True
+        dlg = AppUpdateDialog(self, getattr(self, "last_update_info", None))
+        dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
 
     def check_updates_manual(self):
-        curr_repo = clean_github_repo_name(getattr(self, "github_repo_var", None) and self.github_repo_var.get() or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
-        self.status_var.set(f"Đang kiểm tra bản cập nhật từ GitHub ({curr_repo})...")
-        def worker():
-            res = check_github_update_sync(curr_repo, force_check=True)
-            def update_ui():
-                if getattr(self, "lbl_update_status_detail", None):
-                    if res.get("error"):
-                        self.lbl_update_status_detail.config(text=f"⚠️ {res.get('error')}", fg="#f59e0b")
-                    else:
-                        self.lbl_update_status_detail.config(text=f"✅ Đã kết nối: github.com/{curr_repo} (Bản mới nhất: {res.get('latest_version')})", fg="#34d399")
-                
-                if res.get("has_update"):
-                    self.last_update_info = res
-                    if not getattr(self, "_update_dialog_active", False):
-                        self._update_dialog_active = True
-                        dlg = AppUpdateDialog(self, res)
-                        dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
-                elif res.get("error"):
-                    msg = (f"{res.get('error')}\n\n"
-                           f"Hướng dẫn:\n"
-                           f"1. Hãy nhập đúng định dạng 'TênTàiKhoản/TênDựÁn' trên GitHub (Ví dụ: 'Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger').\n"
-                           f"2. Đảm bảo kho lưu trữ trên GitHub đang ở chế độ Public.\n"
-                           f"3. Đã tạo Release / Tag hoặc upload mã nguồn lên nhánh main/master.")
-                    messagebox.showwarning("Kiểm Tra Kho GitHub", msg)
-                else:
-                    messagebox.showinfo(
-                        "Cập Nhật Ứng Dụng", 
-                        f"✅ Ứng dụng đang ở trạng thái mới nhất 100%!\n\n"
-                        f"• Phiên bản: {CURRENT_APP_VERSION} PRO\n"
-                        f"• Kho lưu trữ GitHub: github.com/{curr_repo}\n"
-                        f"• Tình trạng: Đã đồng bộ hoàn hảo với commit mới nhất trên GitHub.\n\n"
-                        f"Khi bạn đẩy code mới lên GitHub, hệ thống sẽ tự động thông báo và hỗ trợ tải 1-click!"
-                    )
-                self.status_var.set("Kiểm tra cập nhật hoàn tất.")
-            self.after(0, update_ui)
-        threading.Thread(target=worker, daemon=True).start()
+        if getattr(self, "_update_dialog_active", False):
+            return
+        self._update_dialog_active = True
+        dlg = AppUpdateDialog(self, update_info=None)
+        dlg.bind("<Destroy>", lambda e: setattr(self, "_update_dialog_active", False))
 
     def setup_header(self):
         header_frame = tk.Frame(self, bg="#1e293b", padx=16, pady=10)
@@ -2289,39 +2301,52 @@ class VideoEditorApp(BaseAppWindow):
         return ""
 
     def _parse_dnd_event_data(self, data_str):
-        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar & Windows Explorer (v3.2.3 PRO)"""
+        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar & Windows Explorer (v3.2.4 PRO)"""
         if not data_str: return []
+        import urllib.parse
+        clean_list = []
+
+        def add_valid(p_raw):
+            p = self._clean_single_path(p_raw)
+            if p and p not in clean_list:
+                clean_list.append(p)
+
         if isinstance(data_str, (list, tuple)):
-            clean_list = []
             for item in data_str:
-                p = self._clean_single_path(item)
-                if p and p not in clean_list:
-                    clean_list.append(p)
+                add_valid(item)
             return clean_list
 
-        clean = []
-        raw_lines = str(data_str).replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        for line in raw_lines:
-            p = self._clean_single_path(line)
-            if p and p not in clean:
-                clean.append(p)
+        raw_str = str(data_str).strip()
 
-        if clean:
-            return clean
-
+        # Thử phân tích danh sách Tcl splitlist
         try:
-            items = self.tk.splitlist(data_str)
+            items = self.tk.splitlist(raw_str)
+            for it in items:
+                add_valid(it)
         except Exception:
-            items = str(data_str).split()
+            pass
 
-        for it in items:
-            p = self._clean_single_path(it)
-            if p and p not in clean:
-                clean.append(p)
-        return clean
+        if clean_list:
+            return clean_list
+
+        # Phân tách theo dòng \n hoặc \r\n
+        lines = raw_str.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        for line in lines:
+            line_str = line.strip().strip('{').strip('}')
+            if line_str.startswith("file://"):
+                add_valid(line_str)
+            else:
+                matches = re.findall(r'file://[^\s\r\n\'"]+', line_str)
+                if matches:
+                    for m in matches:
+                        add_valid(m)
+                else:
+                    add_valid(line_str)
+
+        return clean_list
 
     def init_drag_and_drop_handlers(self):
-        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND) và Windows (windnd / Win32) (v3.2.3 PRO)"""
+        """Khởi tạo kéo thả file an toàn 100% trên cả Linux (TkinterDnD2/XDND/Tcl) và Windows (windnd / Win32) (v3.2.4 PRO)"""
         # 1. Kích hoạt hook native trên Windows (windnd hoặc DragAcceptFiles)
         if os.name == "nt":
             try:
@@ -2329,54 +2354,75 @@ class VideoEditorApp(BaseAppWindow):
             except Exception as e:
                 print(f"[NATIVE_DND_INIT_ERR] {e}", file=sys.stderr)
 
-        # 2. Đăng ký TkinterDnD2 nếu hỗ trợ (Linux X11/Wayland Nautilus/Dolphin và Windows OLE)
-        if getattr(self, "dnd_supported", False) or HAS_TKDND:
-            def make_dnd_handler(target_action):
-                def _handler(event):
-                    try:
-                        data = getattr(event, "data", None)
-                        if data:
-                            now = time.time()
-                            if now - getattr(self, "_last_drop_time", 0.0) < 0.35:
-                                return "break"
-                            self._last_drop_time = now
-                            files = self._parse_dnd_event_data(data)
-                            if files:
-                                self.after(0, lambda: target_action(files))
-                    except Exception as ex:
-                        print(f"[DND_EVENT_ERR] {ex}", file=sys.stderr)
-                    return "break"
-                return _handler
+        def make_dnd_handler(target_action):
+            def _handler(event):
+                try:
+                    data = getattr(event, "data", None)
+                    if not data and hasattr(event, "widget"):
+                        try:
+                            data = event.widget.tk.call('selection', 'get', 'PRIMARY')
+                        except Exception:
+                            pass
+                    if data:
+                        now = time.time()
+                        if now - getattr(self, "_last_drop_time", 0.0) < 0.35:
+                            return "break"
+                        self._last_drop_time = now
+                        files = self._parse_dnd_event_data(data)
+                        if files:
+                            self.after(0, lambda: target_action(files))
+                except Exception as ex:
+                    print(f"[DND_EVENT_ERR] {ex}", file=sys.stderr)
+                return "break"
+            return _handler
 
-            target_widgets = [
-                (getattr(self, "cut_drop_zone", None), self.on_cut_files_received),
-                (getattr(self, "cut_canvas", None), self.on_cut_files_received),
-                (getattr(self, "merge_drop_zone", None), self.on_merge_files_received),
-                (getattr(self, "merge_canvas", None), self.on_merge_files_received),
-                (getattr(self, "merge_listbox", None), self.on_merge_files_received),
-                (getattr(self, "convert_drop_zone", None), self.on_convert_files_received),
-                (getattr(self, "convert_listbox", None), self.on_convert_files_received),
-                (getattr(self, "notebook", None), self._on_global_drop),
-                (self, self._on_global_drop),
-            ]
-            for w, action in target_widgets:
-                if w is not None:
+        target_widgets = [
+            (getattr(self, "cut_drop_zone", None), self.on_cut_files_received),
+            (getattr(self, "cut_canvas", None), self.on_cut_files_received),
+            (getattr(self, "merge_drop_zone", None), self.on_merge_files_received),
+            (getattr(self, "merge_canvas", None), self.on_merge_files_received),
+            (getattr(self, "merge_listbox", None), self.on_merge_files_received),
+            (getattr(self, "convert_drop_zone", None), self.on_convert_files_received),
+            (getattr(self, "convert_listbox", None), self.on_convert_files_received),
+            (getattr(self, "notebook", None), self._on_global_drop),
+            (self, self._on_global_drop),
+        ]
+
+        for w, action in target_widgets:
+            if w is not None:
+                h = make_dnd_handler(action)
+                # A. Phương thức TkinterDnD2
+                if hasattr(w, "drop_target_register"):
                     try:
-                        if hasattr(w, "drop_target_register"):
-                            try:
-                                w.drop_target_register("*")
-                            except Exception:
-                                try:
-                                    w.drop_target_register(DND_FILES, DND_ALL, "text/uri-list", "text/plain")
-                                except Exception:
-                                    w.drop_target_register(DND_FILES)
-                            h = make_dnd_handler(action)
-                            w.dnd_bind("<<Drop>>", h)
-                            w.dnd_bind("<<Drop:DND_Files>>", h)
-                            w.dnd_bind("<<Drop:DND_Text>>", h)
-                            w.dnd_bind("<<Drop:*>>", h)
+                        w.drop_target_register("*")
+                    except Exception:
+                        try:
+                            w.drop_target_register(DND_FILES, DND_ALL, "text/uri-list", "text/plain")
+                        except Exception:
+                            pass
+                    try:
+                        w.dnd_bind("<<Drop>>", h)
+                        w.dnd_bind("<<Drop:DND_Files>>", h)
+                        w.dnd_bind("<<Drop:DND_Text>>", h)
+                        w.dnd_bind("<<Drop:*>>", h)
+                        w.dnd_bind("<<Drop:text/uri-list>>", h)
                     except Exception:
                         pass
+
+                # B. Tcl tkdnd fallback trực tiếp trên Linux
+                try:
+                    self.tk.call('tkdnd::drop_target', 'register', w._w, '*')
+                    self.tk.call('bind', w._w, '<<Drop>>', h)
+                    self.tk.call('bind', w._w, '<<Drop:text/uri-list>>', h)
+                except Exception:
+                    pass
+
+                # C. Bind sự kiện ảo chuẩn Tkinter
+                try:
+                    w.bind("<<Drop>>", h)
+                    w.bind("<<Drop:text/uri-list>>", h)
+                except Exception:
+                    pass
 
 
     def handle_initial_files(self, args_list):
@@ -3578,31 +3624,6 @@ class VideoEditorApp(BaseAppWindow):
 
         tk.Button(row_ff_btns, text="⚡ Tự Động Tải & Cài Đặt FFmpeg Ngay (1-Click)", bg="#0284c7", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.start_auto_download_ffmpeg).pack(side="left", padx=4)
         tk.Button(row_ff_btns, text="🔄 Kiểm Tra Lại", bg="#334155", fg="#ffffff", font=("Segoe UI", 9), relief="flat", command=self.refresh_ffmpeg_status).pack(side="left", padx=4)
-
-        # CẤU HÌNH KHO GITHUB & TỰ ĐỘNG CẬP NHẬT
-        box_update = tk.LabelFrame(p, text=" ⚡ Cập Nhật Tự Động & Kho Lưu Trữ GitHub ", font=("Segoe UI", 10, "bold"), fg="#818cf8", bg="#0f172a", padx=16, pady=12)
-        box_update.pack(fill="x", pady=8)
-
-        tk.Label(box_update, text="Tên Kho GitHub (Định dạng 'TênTàiKhoản/TênDựÁn' hoặc dán link GitHub):", font=("Segoe UI", 9), fg="#cbd5e1", bg="#0f172a").pack(anchor="w")
-
-        row_repo = tk.Frame(box_update, bg="#0f172a")
-        row_repo.pack(fill="x", pady=(4, 6))
-
-        saved_repo = load_app_config().get("github_repo", DEFAULT_GITHUB_REPO)
-        self.github_repo_var = tk.StringVar(value=saved_repo)
-        self.ent_github_repo = tk.Entry(row_repo, textvariable=self.github_repo_var, font=("Consolas", 10), bg="#1e293b", fg="#38bdf8", relief="flat")
-        self.ent_github_repo.pack(side="left", fill="x", expand=True, ipady=4, padx=(0, 6))
-
-        def save_and_test_repo():
-            r_val = clean_github_repo_name(self.github_repo_var.get())
-            self.github_repo_var.set(r_val)
-            save_app_config({"github_repo": r_val})
-            self.check_updates_manual()
-
-        tk.Button(row_repo, text="🔍 Lưu & Kiểm Tra Cập Nhật", bg="#4f46e5", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=save_and_test_repo).pack(side="right")
-
-        self.lbl_update_status_detail = tk.Label(box_update, text=f"• Hiện tại: {CURRENT_APP_VERSION} PRO | Kho lưu trữ cấu hình: {saved_repo}", font=("Segoe UI", 8), fg="#94a3b8", bg="#0f172a")
-        self.lbl_update_status_detail.pack(anchor="w", pady=(2, 0))
 
         box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.4 PRO ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
         box_info.pack(fill="both", expand=True, pady=8)
