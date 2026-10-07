@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Suite Fast Video Studio v3.2.2 PRO
+Test Suite Fast Video Studio v3.2.3 PRO
 1. Test Hardware Acceleration (GPU Auto-Detect & multi-thread CPU)
 2. Test Ultra-Fast Lossless Cut (Input Seek < 0.2s)
 3. Test Smart-Merge (H.264 + H.265 Reclocking & Zero Speed-up)
@@ -21,7 +21,7 @@ FFPROBE = find_binary("ffprobe")
 
 def run_test():
     print("==============================================================")
-    print("   FAST VIDEO CUTTER, MERGER & CONVERTER v3.2.2 PRO - TEST")
+    print("   FAST VIDEO CUTTER, MERGER & CONVERTER v3.2.3 PRO - TEST")
     print("==============================================================")
     
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_output")
@@ -70,7 +70,7 @@ def run_test():
     else:
         print("    [!] Lỗi Cắt:", res_cut.stderr.decode("utf-8", errors="ignore")[-200:])
 
-    print("[3/5] Đang kiểm tra Smart-Merge v3.2.2 (Tăng Tốc Thuật Toán & Reclocking)...")
+    print("[3/5] Đang kiểm tra Smart-Merge v3.2.3 (Tăng Tốc Thuật Toán & Reclocking)...")
     t0 = time.time()
     cmd_merge = [
         FFMPEG, "-y",
@@ -90,7 +90,7 @@ def run_test():
     res_m = subprocess.run(cmd_merge, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=flags)
     t_merge = time.time() - t0
     if res_m.returncode == 0 and os.path.exists(dest_merge):
-        print(f"    [✓] Ghép Smart-Merge v3.2.2 hoàn tất trong {t_merge:.2f}s (Tốc độ 1.0x mượt mà, không tua nhanh).")
+        print(f"    [✓] Ghép Smart-Merge v3.2.3 hoàn tất trong {t_merge:.2f}s (Tốc độ 1.0x mượt mà, không tua nhanh).")
     else:
         print("    [!] Lỗi Ghép Smart-Merge:", res_m.stderr.decode("utf-8", errors="ignore")[-200:])
 
@@ -110,7 +110,7 @@ def run_test():
         print("    [✓] Tách âm thanh MP3 (320kbps) & WAV (PCM 48kHz) thành công 100%.")
 
     print("\n--------------------------------------------------------------")
-    print(" [✓] TOÀN BỘ 5/5 BÀI KIỂM THỬ v3.2.2 PRO ĐẠT 100% HOÀN HẢO!")
+    print(" [✓] TOÀN BỘ 5/5 BÀI KIỂM THỬ v3.2.3 PRO ĐẠT 100% HOÀN HẢO!")
     print("==============================================================")
 
 if __name__ == "__main__":

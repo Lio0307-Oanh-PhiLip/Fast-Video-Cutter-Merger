@@ -59,16 +59,16 @@ jobs:
 
       - name: Archive Portable Zip
         run: |
-          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.2-Windows-Portable.zip -Force
+          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.3-Windows-Portable.zip -Force
 
       - name: Prepare Windows Release Binaries
         run: |
           mkdir build_assets
-          Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor-v3.2.2-Setup.exe"
-          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.2-Setup.exe")) {
+          Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor-v3.2.3-Setup.exe"
+          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.3-Setup.exe")) {
             Get-ChildItem -Path "dist\FastVideoEditor\FastVideoEditor.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor.exe"
           }
-          Copy-Item "FastVideoEditor-v3.2.2-Windows-Portable.zip" "build_assets\"
+          Copy-Item "FastVideoEditor-v3.2.3-Windows-Portable.zip" "build_assets\"
           Copy-Item "fast_video_editor.py" "build_assets\"
 
       - name: Upload Windows Artifacts
@@ -77,9 +77,34 @@ jobs:
           name: windows-binaries
           path: build_assets/*
 
+  build-linux:
+    name: Build Linux Debian Package (.deb)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build Debian Package
+        run: |
+          chmod +x build_linux_deb.sh
+          ./build_linux_deb.sh
+          mkdir -p linux_assets
+          cp build_deb/*.deb linux_assets/ 2>/dev/null || true
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binaries
+          path: linux_assets/*
+
   release:
     name: Auto Publish to GitHub Releases
-    needs: [build-windows]
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -91,13 +116,19 @@ jobs:
           name: windows-binaries
           path: release_files
 
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+          path: release_files
+
       - name: Determine Tag Name
         id: get_version
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="v3.2.2"
+            TAG_NAME="v3.2.3"
           fi
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
 
@@ -107,11 +138,11 @@ jobs:
           tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
           name: "Fast Video Cutter & Merger Studio ${{ steps.get_version.outputs.TAG_NAME }} PRO"
           body: |
-            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.2 PRO)**
+            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.3 PRO)**
             
             ### 📌 Thông tin bản cập nhật ${{ steps.get_version.outputs.TAG_NAME }} PRO:
-            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.2-Setup.exe`)
-            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.2-Windows-Portable.zip`)
+            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.3-Setup.exe`)
+            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.3-Windows-Portable.zip`)
             - 🔄 Cập nhật động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp không sợ bị khóa file
             - 🎯 Khắc phục 100% tràn chữ/che khuất thông tin phiên bản ở cửa sổ thu nhỏ
           files: release_files/*

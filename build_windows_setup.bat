@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title Fast Video Cutter and Merger Studio v3.2.2 - 1-Click Setup Builder
+title Fast Video Cutter and Merger Studio v3.2.3 - 1-Click Setup Builder
 cls
 
 echo ==============================================================
-echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.2 PRO
+echo    FAST VIDEO CUTTER AND MERGER STUDIO v3.2.3 PRO
 echo    1-Click Windows Setup Builder (PyInstaller + Inno Setup)
 echo ==============================================================
 echo.
@@ -94,15 +94,15 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if exist "Output\FastVideoEditor_v3.2.2_Setup.exe" (
+if exist "Output\FastVideoEditor_v3.2.3_Setup.exe" (
     if not exist "dist" mkdir "dist"
-    copy /y "Output\FastVideoEditor_v3.2.2_Setup.exe" "dist\FastVideoEditor_Setup_v3.2.2.exe" >nul 2>&1
+    copy /y "Output\FastVideoEditor_v3.2.3_Setup.exe" "dist\FastVideoEditor_Setup_v3.2.3.exe" >nul 2>&1
 )
 
 echo.
 echo ==============================================================
 echo [SUCCESS] Windows Setup Package Created Successfully!
-echo Output: Output\FastVideoEditor_v3.2.2_Setup.exe
-echo Copy:   dist\FastVideoEditor_Setup_v3.2.2.exe
+echo Output: Output\FastVideoEditor_v3.2.3_Setup.exe
+echo Copy:   dist\FastVideoEditor_Setup_v3.2.3.exe
 echo ==============================================================
 pause
