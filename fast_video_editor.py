@@ -137,7 +137,7 @@ sys.excepthook = handle_uncaught_exception
 # =====================================================================
 # BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.5 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.2.5"
+CURRENT_APP_VERSION = "v3.2.6"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -1892,14 +1892,17 @@ class VideoEditorApp(BaseAppWindow):
     def show_about_dialog(self):
         info = (
             f"⚡ Fast Video Cutter & Merger Studio {CURRENT_APP_VERSION} PRO\n\n"
+            f"• Tác giả / Bản quyền: TRỊNH PHI LÍP\n"
+            f"• Email: philiptrinh1990@gmail.com\n"
+            f"• Zalo: 0917417252\n"
+            f"• Tài khoản VPBank: 0917417252 (Hỗ trợ bản quyền tác giả)\n\n"
             f"• Nguyên lý: Lossless Stream Copy Engine (FFmpeg)\n"
-            f"• Tốc độ: Cắt ghép siêu tốc trong 1-3 giây không cần re-encode\n"
             f"• Tương thích: Windows 10/11 & Linux (Ubuntu, Debian, Fedora, Arch)\n"
             f"• Thư mục dữ liệu: {get_user_data_dir()}\n"
             f"• Kho GitHub: github.com/{load_app_config().get('github_repo', DEFAULT_GITHUB_REPO)}\n\n"
-            f"Bản quyền © 2026 Lossless Video Tools Studio. All rights reserved."
+            f"Bản quyền © 2026 TRỊNH PHI LÍP. All rights reserved."
         )
-        messagebox.showinfo("Giới Thiệu Ứng Dụng", info)
+        messagebox.showinfo("Giới Thiệu Ứng Dụng & Bản Quyền", info)
 
     def setup_app_icons(self):
         """Thiết lập Logo Biểu Tượng Chuyên Nghiệp & Đồng Bộ Taskbar trên cả Windows và Linux (An Toàn Tuyệt Đối)"""

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.5 PRO - Windows Setup Wizard
+  Fast Video Cutter & Merger Studio v3.2.6 PRO - Windows Setup Wizard
+  Tác giả: TRỊNH PHI LÍP (Email: philiptrinh1990@gmail.com, Zalo: 0917417252, VPBank: 0917417252)
   Trình cài đặt dạng Next-Next-Install-Finish đầy đủ chuẩn Windows 10 / 11
 =============================================================================
 """
@@ -27,10 +28,10 @@ def get_app_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 class WindowsSetupWizard(tk.Tk):
-    """Trình cài đặt tương tác chuyên nghiệp dạng Next -> Next -> Install -> Finish (v3.2.5 PRO)"""
+    """Trình cài đặt tương tác chuyên nghiệp dạng Next -> Next -> Install -> Finish (v3.2.6 PRO)"""
     def __init__(self):
         super().__init__()
-        self.title("Cài Đặt Fast Video Cutter & Merger Studio v3.2.5 PRO")
+        self.title("Cài Đặt Fast Video Cutter & Merger Studio v3.2.6 PRO")
         self.geometry("660x490")
         self.minsize(620, 460)
         self.resizable(False, False)

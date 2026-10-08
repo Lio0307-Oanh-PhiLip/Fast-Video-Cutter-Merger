@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # ==============================================================
-# Script đóng gói gói cài đặt chuẩn Debian / Ubuntu (.deb) v3.2.5 PRO
-# Khắc phục hoàn toàn lỗi treo hệ thống và tương thích 100% Ubuntu/Debian/Mint
+# Script đóng gói gói cài đặt chuẩn Debian / Ubuntu (.deb) v3.2.6 PRO
+# Tác giả: TRỊNH PHI LÍP (philiptrinh1990@gmail.com, Zalo: 0917417252)
 # ==============================================================
 
 set -e
 
 PKG_NAME="fast-video-editor"
-VERSION="3.2.5"
+VERSION="3.2.6"
 ARCH="amd64"
 BUILD_DIR="build_deb/${PKG_NAME}_${VERSION}_${ARCH}"
 
 echo "=============================================================="
-echo "  ⚡ ĐANG ĐÓNG GÓI GÓI CÀI ĐẶT UBUNTU / DEBIAN (.DEB) v3.2.5 PRO"
+echo "  ⚡ ĐANG ĐÓNG GÓI GÓI CÀI ĐẶT UBUNTU / DEBIAN (.DEB) v3.2.6 PRO"
 echo "=============================================================="
 
 # 1. Dọn dẹp thư mục tạm
@@ -28,15 +28,15 @@ mkdir -p "${BUILD_DIR}/usr/share/pixmaps"
 # 2. Tạo file cấu hình gói DEBIAN/control chuẩn quốc tế
 cat << 'EOF' > "${BUILD_DIR}/DEBIAN/control"
 Package: fast-video-editor
-Version: 3.2.5
+Version: 3.2.6
 Section: video
 Priority: optional
 Architecture: amd64
 Depends: ffmpeg, python3, python3-tk
 Recommends: tkdnd
-Maintainer: FastVideoEditor Studio <support@fastvideo.org>
+Maintainer: TRỊNH PHI LÍP <philiptrinh1990@gmail.com>
 Description: High-speed Lossless Video Cutter, Merger & Remuxer Studio.
- Fast Video Cutter & Merger Studio v3.2.5 - Cắt, ghép và chuyển đuôi video siêu tốc
+ Fast Video Cutter & Merger Studio v3.2.6 - Cắt, ghép và chuyển đuôi video siêu tốc
  chuẩn Lossless Stream Copy (CRF 17 Studio Quality, Không Treo Máy).
 EOF
 
