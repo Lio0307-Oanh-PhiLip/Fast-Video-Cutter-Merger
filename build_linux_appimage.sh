@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================
-# Script đóng gói file chạy Universal Linux (.AppImage) v3.2.7 PRO
+# Script đóng gói file chạy Universal Linux (.AppImage) v3.2.8 PRO
 # Tác giả: TRỊNH PHI LÍP (philiptrinh1990@gmail.com | Zalo/VPBank: 0917417252)
 # Chạy được trên MỌI bản phân phối Linux (Ubuntu, Fedora, Arch, Debian)
 # ==============================================================
@@ -8,7 +8,7 @@
 set -e
 
 APP_NAME="FastVideoEditor"
-APP_VERSION="3.2.7"
+APP_VERSION="3.2.8"
 APP_DIR="AppDir"
 
 echo "=============================================================="
@@ -41,7 +41,7 @@ chmod +x "${APP_DIR}/AppRun"
 # 4. Tạo Desktop file
 cat << 'EOF' > "${APP_DIR}/fast-video-editor.desktop"
 [Desktop Entry]
-Name=Fast Video Cutter & Merger Studio v3.2.7 PRO
+Name=Fast Video Cutter & Merger Studio v3.2.8 PRO
 Exec=fast-video-editor %F
 Icon=fast-video-editor
 Type=Application

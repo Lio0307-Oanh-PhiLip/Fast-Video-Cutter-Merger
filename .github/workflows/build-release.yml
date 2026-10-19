@@ -72,22 +72,22 @@ jobs:
 
       - name: Archive Portable Zip
         run: |
-          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.7-Windows-Portable.zip -Force
+          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.8-Windows-Portable.zip -Force
 
       - name: Prepare Windows Release Binaries
         run: |
           New-Item -ItemType Directory -Force -Path "build_assets" | Out-Null
           if (Test-Path "Output") {
             Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object {
-              Copy-Item $_.FullName -Destination "build_assets\FastVideoEditor-v3.2.7-Setup.exe" -Force
+              Copy-Item $_.FullName -Destination "build_assets\FastVideoEditor-v3.2.8-Setup.exe" -Force
             }
           }
-          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.7-Setup.exe")) {
+          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.8-Setup.exe")) {
             if (Test-Path "dist\FastVideoEditor\FastVideoEditor.exe") {
               Copy-Item "dist\FastVideoEditor\FastVideoEditor.exe" -Destination "build_assets\FastVideoEditor.exe" -Force
             }
           }
-          Copy-Item "FastVideoEditor-v3.2.7-Windows-Portable.zip" "build_assets\" -Force
+          Copy-Item "FastVideoEditor-v3.2.8-Windows-Portable.zip" "build_assets\" -Force
           Copy-Item "fast_video_editor.py" "build_assets\" -Force
 
       - name: Upload Windows Artifacts
@@ -149,7 +149,7 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             BASE_TAG="${GITHUB_REF#refs/tags/}"
           else
-            BASE_TAG=$(python3 -c 'import re; m=re.search(r"CURRENT_APP_VERSION\s*=\s*\"([^\"]+)\"", open("fast_video_editor.py", encoding="utf-8").read()); print(m.group(1) if m else "v3.2.7")' 2>/dev/null || echo "v3.2.7")
+            BASE_TAG=$(python3 -c 'import re; m=re.search(r"CURRENT_APP_VERSION\s*=\s*\"([^\"]+)\"", open("fast_video_editor.py", encoding="utf-8").read()); print(m.group(1) if m else "v3.2.8")' 2>/dev/null || echo "v3.2.8")
           fi
           TAG_NAME="${BASE_TAG}"
           # Kiểm tra nếu tag đã tồn tại trên GitHub Releases (chống lỗi Immutable Release: Cannot delete asset from an immutable release)
@@ -169,13 +169,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.get_version.outputs.TAG_NAME }}"
-          NOTES="🚀 **Tự động đóng gói phát hành qua GitHub Actions CI/CD (v3.2.7 PRO)**
+          NOTES="🚀 **Tự động đóng gói phát hành qua GitHub Actions CI/CD (v3.2.8 PRO)**
           Tác giả: TRỊNH PHI LÍP (Email: philiptrinh1990@gmail.com, Zalo: 0917417252, VPBank: 0917417252)
 
           ### 📌 Thông tin bản cập nhật ${TAG} PRO:
-          - ⚡ Tự động build ra file cài đặt Windows \`.exe\` (\`FastVideoEditor-v3.2.7-Setup.exe\`)
-          - 📦 Tự động nén bản Portable \`.zip\` chạy không cần cài đặt (\`FastVideoEditor-v3.2.7-Windows-Portable.zip\`)
-          - 🐧 Tự động đóng gói bản cài đặt Linux Debian/Ubuntu (\`fast-video-editor_3.2.7_amd64.deb\`) tích hợp sẵn thư viện kéo thả \`tkinterdnd2\`
+          - ⚡ Tự động build ra file cài đặt Windows \`.exe\` (\`FastVideoEditor-v3.2.8-Setup.exe\`)
+          - 📦 Tự động nén bản Portable \`.zip\` chạy không cần cài đặt (\`FastVideoEditor-v3.2.8-Windows-Portable.zip\`)
+          - 🐧 Tự động đóng gói bản cài đặt Linux Debian/Ubuntu (\`fast-video-editor_3.2.8_amd64.deb\`) tích hợp sẵn thư viện kéo thả \`tkinterdnd2\`
           - 🔄 Động cơ Auto-Update 1-Click thông báo bản mới (lựa chọn Cập nhật ngay hoặc Bỏ qua), khắc phục triệt để lỗi ở mốc 20% / 40%
           - 🎯 Hoàn thiện tính năng Kéo & Thả Video 100% vào khung trên Linux (Nautilus, Dolphin, Thunar, Nemo) & Windows"
 
