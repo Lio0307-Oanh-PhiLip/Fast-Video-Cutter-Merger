@@ -1446,9 +1446,18 @@ def run_ffmpeg_with_progress(cmd, total_duration, on_progress_callback=None, fla
     return proc.returncode, err_output
 
 class DraggableTimeline(tk.Canvas):
+    """
+    Thanh Timeline Tương Tác Chuẩn Studio (v3.2.7 PRO):
+    - Tách biệt rõ ràng vùng nắm Kéo Tua Thời Gian Màu Đỏ (Playhead 'cur' ở nửa trên) và vùng Mốc Cắt [Đầu 'start' / Cuối 'end'] ở nửa dưới.
+    - Khi con trỏ màu đỏ (Playhead) trùng với điểm cắt Đầu hoặc Cuối, ưu tiên tuyệt đối thao tác kéo thanh tua màu đỏ (Playhead)
+      khi nhấp vào đầu ghim đỏ hoặc thân kim đỏ; chỉ kéo mốc cắt khi nhấp vào cánh tam giác bên ngoài của mốc cắt.
+    - Hỗ trợ hiệu ứng sáng (Hover Highlight) và hiển thị nhãn thông minh giúp thao tác Click & Kéo Thả chính xác 100%.
+    """
     def __init__(self, parent, duration=60.0, on_change_callback=None, on_seek_callback=None, **kwargs):
-        super().__init__(parent, bg="#0f172a", highlightthickness=1, highlightbackground="#334155", **kwargs)
-        self.duration = max(1.0, duration)
+        if "height" not in kwargs:
+            kwargs["height"] = 52
+        super().__init__(parent, bg="#0f172a", highlightthickness=1, highlightbackground="#334155", cursor="hand2", **kwargs)
+        self.duration = max(1.0, float(duration or 60.0))
         self.start_time = 0.0
         self.end_time = min(self.duration, 30.0)
         self.current_time = 0.0
@@ -1457,57 +1466,138 @@ class DraggableTimeline(tk.Canvas):
         self.on_seek = on_seek_callback
 
         self.dragging = None
-        self.pad_x = 12
+        self.hover_target = None
+        self.pad_x = 14
         self.track_y = 24
         self.track_h = 10
 
         self.bind("<Configure>", lambda e: self.draw())
+        self.bind("<Motion>", self.on_mouse_hover)
+        self.bind("<Leave>", self.on_mouse_leave)
         self.bind("<Button-1>", self.on_mouse_down)
         self.bind("<B1-Motion>", self.on_mouse_move)
         self.bind("<ButtonRelease-1>", self.on_mouse_up)
+        # Chuột phải luôn tua nhanh thanh màu đỏ (Playhead) bất kể vị trí
+        self.bind("<Button-3>", self.on_right_mouse_down)
+        self.bind("<B3-Motion>", self.on_right_mouse_move)
+        self.bind("<ButtonRelease-3>", self.on_mouse_up)
 
     def set_duration(self, dur):
-        self.duration = max(1.0, dur)
+        self.duration = max(1.0, float(dur or 1.0))
         self.start_time = max(0.0, min(self.start_time, self.duration))
         self.end_time = max(self.start_time + 0.1, min(self.end_time, self.duration))
         self.current_time = max(0.0, min(self.current_time, self.duration))
         self.draw()
 
     def set_times(self, s, e, cur=None):
-        self.start_time = max(0.0, min(s, self.duration))
-        self.end_time = max(self.start_time + 0.1, min(e, self.duration))
+        self.start_time = max(0.0, min(float(s or 0.0), self.duration))
+        self.end_time = max(self.start_time + 0.1, min(float(e or 0.0), self.duration))
         if cur is not None:
-            self.current_time = max(0.0, min(cur, self.duration))
+            self.current_time = max(0.0, min(float(cur or 0.0), self.duration))
         self.draw()
 
     def set_current_time(self, cur):
-        self.current_time = max(0.0, min(cur, self.duration))
+        self.current_time = max(0.0, min(float(cur or 0.0), self.duration))
         self.draw()
 
     def _time_to_x(self, t):
-        w = max(10, self.winfo_width() - 2 * self.pad_x)
-        return self.pad_x + (t / self.duration) * w
+        canvas_w = self.winfo_width()
+        if canvas_w <= 30:
+            canvas_w = int(self.cget("width") or 400)
+        w = max(10, canvas_w - 2 * self.pad_x)
+        return self.pad_x + (max(0.0, min(float(t), self.duration)) / self.duration) * w
 
     def _x_to_time(self, x):
-        w = max(10, self.winfo_width() - 2 * self.pad_x)
-        clamped_x = max(self.pad_x, min(x, self.pad_x + w))
+        canvas_w = self.winfo_width()
+        if canvas_w <= 30:
+            canvas_w = int(self.cget("width") or 400)
+        w = max(10, canvas_w - 2 * self.pad_x)
+        clamped_x = max(self.pad_x, min(float(x), self.pad_x + w))
         ratio = (clamped_x - self.pad_x) / w
         return ratio * self.duration
+
+    def _pick_handle(self, x, y):
+        """
+        Thuật toán xác định mục tiêu kéo thả thông minh 2 chiều (X, Y):
+        - Giải quyết triệt để lỗi không kéo được thanh tua màu đỏ (Playhead 'cur') khi trùng với điểm cắt ('start' / 'end').
+        - Nửa trên (y < track_y): Ưu tiên tuyệt đối đầu ghim thanh tua màu đỏ ('cur').
+        - Khi trùng điểm cắt (abs(x_cur - x_s) <= 10 hoặc abs(x_cur - x_e) <= 10):
+          + Nhấp trực tiếp vào tâm kim đỏ hoặc đầu ghim đỏ -> Luôn kéo thanh tua màu đỏ ('cur').
+          + Chỉ khi nhấp vào mép ngoài cánh tam giác bên trái của mốc Đầu (x < x_s - 3 và y >= track_y) mới kéo 'start'.
+          + Chỉ khi nhấp vào mép ngoài cánh tam giác bên phải của mốc Cuối (x > x_e + 3 và y >= track_y) mới kéo 'end'.
+        """
+        x_s = self._time_to_x(self.start_time)
+        x_e = self._time_to_x(self.end_time)
+        x_cur = self._time_to_x(self.current_time)
+
+        # 1. Vùng nửa trên (y < track_y): Vùng độc quyền của Đầu Ghim Tua Thời Gian Màu Đỏ (Playhead)
+        if y < self.track_y:
+            if abs(x - x_cur) <= 12:
+                return "cur"
+            # Nếu không trùng với x_cur nhưng nhấp lệch hẳn sang cánh mốc cắt ở ngay sát mép trên thanh track
+            if y >= self.track_y - 3:
+                if abs(x - x_s) <= 8 and abs(x_cur - x_s) > 10:
+                    return "start"
+                if abs(x - x_e) <= 8 and abs(x_cur - x_e) > 10:
+                    return "end"
+            return None
+
+        # 2. Trường hợp thanh tua màu đỏ (x_cur) đang TRÙNG hoặc SÁT với điểm cắt Đầu (x_s) hoặc Cuối (x_e)
+        overlap_start = abs(x_cur - x_s) <= 10
+        overlap_end = abs(x_cur - x_e) <= 10
+
+        if overlap_start or overlap_end:
+            # Nếu người dùng nhấp vào cánh ngoài bên trái của tam giác Điểm Đầu [IN] (y >= track_y)
+            if overlap_start and (x_s - 12 <= x < x_s - 3) and y >= self.track_y:
+                return "start"
+            # Nếu người dùng nhấp vào cánh ngoài bên phải của tam giác Điểm Cuối [OUT] (y >= track_y)
+            if overlap_end and (x_e + 3 < x <= x_e + 12) and y >= self.track_y:
+                return "end"
+            # Còn lại mọi cú nhấp vào vị trí trùng (tâm kim đỏ, đầu ghim đỏ, thân kim đỏ) -> Ưu tiên kéo thanh tua đỏ 'cur'!
+            if abs(x - x_cur) <= 10:
+                return "cur"
+
+        # 3. Trường hợp bình thường (không trùng nhau): Kiểm tra khoảng cách tới từng mốc
+        candidates = []
+        if abs(x - x_cur) <= 9:
+            # Ưu tiên khoảng cách tới kim đỏ
+            candidates.append((abs(x - x_cur), 0, "cur"))
+        if (x_s - 11 <= x <= x_s + 6) and (self.track_y - 3 <= y <= self.track_y + self.track_h + 10):
+            # Tâm cánh tam giác trái nằm ở x_s - 4
+            candidates.append((abs(x - (x_s - 3.5)), 1, "start"))
+        if (x_e - 6 <= x <= x_e + 11) and (self.track_y - 3 <= y <= self.track_y + self.track_h + 10):
+            # Tâm cánh tam giác phải nằm ở x_e + 4
+            candidates.append((abs(x - (x_e + 3.5)), 2, "end"))
+
+        if candidates:
+            candidates.sort(key=lambda item: (item[0], item[1]))
+            return candidates[0][2]
+
+        return None
 
     def draw(self):
         self.delete("all")
         w = self.winfo_width()
         h = self.winfo_height()
-        if w < 30: return
+        if w < 30:
+            return
+
+        active_mode = self.dragging or self.hover_target
 
         # 1. Background Track
         track_w = w - 2 * self.pad_x
-        self.create_rectangle(self.pad_x, self.track_y, self.pad_x + track_w, self.track_y + self.track_h, fill="#1e293b", outline="#334155", width=1)
+        self.create_rectangle(
+            self.pad_x, self.track_y, self.pad_x + track_w, self.track_y + self.track_h,
+            fill="#1e293b", outline="#334155", width=1
+        )
 
-        # 2. Selected Range
+        # 2. Selected Cut Range
         x_s = self._time_to_x(self.start_time)
         x_e = self._time_to_x(self.end_time)
-        self.create_rectangle(x_s, self.track_y, x_e, self.track_y + self.track_h, fill="#0284c7", outline="")
+        self.create_rectangle(
+            x_s, self.track_y, x_e, self.track_y + self.track_h,
+            fill="#0284c7", outline="#38bdf8" if active_mode in ("start", "end") else ""
+        )
 
         # 3. Time Ticks
         for i in range(11):
@@ -1517,48 +1607,137 @@ class DraggableTimeline(tk.Canvas):
                 t_val = (i / 10.0) * self.duration
                 self.create_text(tx, self.track_y + self.track_h + 12, text=format_seconds(t_val), fill="#64748b", font=("Segoe UI", 7))
 
-        # 4. Range Handles [IN / OUT]
-        self.create_polygon(x_s, self.track_y - 2, x_s - 6, self.track_y + self.track_h + 2, x_s, self.track_y + self.track_h + 2, fill="#10b981", outline="#ffffff", width=1)
-        self.create_polygon(x_e, self.track_y - 2, x_e + 6, self.track_y + self.track_h + 2, x_e, self.track_y + self.track_h + 2, fill="#f59e0b", outline="#ffffff", width=1)
+        # 4. Range Handles [IN / OUT] - Cánh mở sang trái (IN) và sang phải (OUT) để không che lấp tâm kim đỏ
+        s_fill = "#34d399" if active_mode == "start" else "#10b981"
+        s_width = 2 if active_mode == "start" else 1
+        self.create_polygon(
+            x_s, self.track_y - 2,
+            x_s - 9, self.track_y + self.track_h + 4,
+            x_s, self.track_y + self.track_h + 4,
+            fill=s_fill, outline="#ffffff", width=s_width
+        )
 
-        # 5. Playhead cursor
+        e_fill = "#fbbf24" if active_mode == "end" else "#f59e0b"
+        e_width = 2 if active_mode == "end" else 1
+        self.create_polygon(
+            x_e, self.track_y - 2,
+            x_e + 9, self.track_y + self.track_h + 4,
+            x_e, self.track_y + self.track_h + 4,
+            fill=e_fill, outline="#ffffff", width=e_width
+        )
+
+        # 5. Playhead Cursor (Thanh Tua Thời Gian Màu Đỏ) - Luôn vẽ trên cùng với Đầu Ghim (Knob) rõ ràng ở nửa trên
         x_cur = self._time_to_x(self.current_time)
-        self.create_line(x_cur, 4, x_cur, h - 16, fill="#ef4444", width=2)
-        self.create_polygon(x_cur - 4, 4, x_cur + 4, 4, x_cur, 10, fill="#ef4444", outline="")
+        cur_fill = "#fb7185" if active_mode == "cur" else "#ef4444"
+        cur_line_w = 3 if active_mode == "cur" else 2
+
+        # Thân kim đỏ
+        self.create_line(x_cur, 14, x_cur, self.track_y + self.track_h + 5, fill=cur_fill, width=cur_line_w)
+        # Đầu ghim đỏ hình ngũ giác (y từ 2 đến 18, rộng 14px) dễ nắm kéo ngay cả khi trùng mốc cắt
+        self.create_polygon(
+            x_cur - 7, 2,
+            x_cur + 7, 2,
+            x_cur + 7, 11,
+            x_cur, 18,
+            x_cur - 7, 11,
+            fill=cur_fill, outline="#ffffff", width=1.5 if active_mode == "cur" else 1
+        )
+        # Vạch trắng giữa đầu ghim đỏ
+        self.create_line(x_cur, 5, x_cur, 11, fill="#ffffff", width=1)
+
+        # 6. Hiển thị nhãn trạng thái trực quan khi rê chuột hoặc đang kéo
+        if active_mode == "cur":
+            lbl_x = max(42, min(w - 42, x_cur))
+            self.create_text(
+                lbl_x, 9,
+                text=f"Tua: {format_seconds(self.current_time)}",
+                fill="#fca5a5", font=("Segoe UI", 7, "bold"),
+                anchor="w" if x_cur < w - 95 else "e"
+            )
+        elif active_mode == "start":
+            lbl_x = max(42, min(w - 42, x_s))
+            self.create_text(
+                lbl_x, 9,
+                text=f"[Đầu: {format_seconds(self.start_time)}",
+                fill="#6ee7b7", font=("Segoe UI", 7, "bold"),
+                anchor="w" if x_s < w - 95 else "e"
+            )
+        elif active_mode == "end":
+            lbl_x = max(42, min(w - 42, x_e))
+            self.create_text(
+                lbl_x, 9,
+                text=f"Cuối]: {format_seconds(self.end_time)}",
+                fill="#fde68a", font=("Segoe UI", 7, "bold"),
+                anchor="w" if x_e < w - 95 else "e"
+            )
+
+    def on_mouse_hover(self, event):
+        if self.dragging:
+            return
+        picked = self._pick_handle(event.x, event.y)
+        if picked != self.hover_target:
+            self.hover_target = picked
+            try:
+                self.config(cursor="sb_h_double_arrow" if picked in ("cur", "start", "end") else "hand2")
+            except Exception:
+                pass
+            self.draw()
+
+    def on_mouse_leave(self, event):
+        if not self.dragging and self.hover_target is not None:
+            self.hover_target = None
+            try:
+                self.config(cursor="hand2")
+            except Exception:
+                pass
+            self.draw()
 
     def on_mouse_down(self, event):
-        x = event.x
-        x_s = self._time_to_x(self.start_time)
-        x_e = self._time_to_x(self.end_time)
-        x_cur = self._time_to_x(self.current_time)
-
-        if abs(x - x_s) <= 8:
-            self.dragging = "start"
-        elif abs(x - x_e) <= 8:
-            self.dragging = "end"
-        elif abs(x - x_cur) <= 8:
-            self.dragging = "cur"
+        picked = self._pick_handle(event.x, event.y)
+        if picked in ("cur", "start", "end"):
+            self.dragging = picked
+            self.hover_target = picked
+            self.draw()
+            if picked == "cur" and self.on_seek:
+                self.on_seek(self.current_time)
         else:
-            t = self._x_to_time(x)
+            # Nhấp vào khoảng trống bất kỳ trên thanh Timeline -> Di chuyển ngay thanh tua đỏ tới đó và bắt đầu kéo tua
+            t = self._x_to_time(event.x)
             self.current_time = t
             self.dragging = "cur"
+            self.hover_target = "cur"
             self.draw()
             if self.on_seek:
                 self.on_seek(self.current_time)
 
+    def on_right_mouse_down(self, event):
+        """Chuột phải luôn điều khiển trực tiếp thanh tua màu đỏ (Playhead) trong mọi tình huống"""
+        t = self._x_to_time(event.x)
+        self.current_time = t
+        self.dragging = "cur"
+        self.hover_target = "cur"
+        self.draw()
+        if self.on_seek:
+            self.on_seek(self.current_time)
+
+    def on_right_mouse_move(self, event):
+        if self.dragging == "cur":
+            self.on_mouse_move(event)
+
     def on_mouse_move(self, event):
-        if not self.dragging: return
+        if not self.dragging:
+            return
         t = self._x_to_time(event.x)
         if self.dragging == "start":
             self.start_time = max(0.0, min(t, self.end_time - 0.1))
             self.draw()
             if self.on_change:
-                self.on_change(self.start_time, self.end_time, self.current_time)
+                self.on_change(self.start_time, self.end_time, self.start_time)
         elif self.dragging == "end":
             self.end_time = max(self.start_time + 0.1, min(t, self.duration))
             self.draw()
             if self.on_change:
-                self.on_change(self.start_time, self.end_time, self.current_time)
+                self.on_change(self.start_time, self.end_time, self.end_time)
         elif self.dragging == "cur":
             self.current_time = max(0.0, min(t, self.duration))
             self.draw()
@@ -1567,6 +1746,7 @@ class DraggableTimeline(tk.Canvas):
 
     def on_mouse_up(self, event):
         self.dragging = None
+        self.draw()
 
 
 # =====================================================================
@@ -3104,22 +3284,48 @@ class VideoEditorApp(BaseAppWindow):
             self.extract_and_show_frame(self.cut_video_path, cur, self.cut_canvas, "cut")
 
     def extract_and_show_frame(self, video_path, time_pos, canvas, target="cut"):
+        """
+        Trích xuất khung hình xem trước mượt mà với cơ chế chống nghẽn hàng đợi (Latest-Frame Wins Throttling):
+        Khi người dùng kéo liên tục thanh tua màu đỏ hoặc mốc cắt, chỉ giữ lại yêu cầu thời gian mới nhất,
+        tránh tạo hàng chục tiến trình FFmpeg chạy chồng chéo làm trễ phản hồi chuột.
+        """
         if not video_path or not os.path.exists(video_path):
             return
+        if not hasattr(self, "_preview_pending_req"):
+            self._preview_pending_req = {}
+            self._preview_worker_busy = {}
+
+        self._preview_pending_req[target] = (video_path, float(time_pos or 0.0), canvas)
+        if self._preview_worker_busy.get(target, False):
+            return
+
+        self._preview_worker_busy[target] = True
+
         def worker():
             try:
-                tc = format_seconds(time_pos)
-                cmd = [
-                    FFMPEG_EXE, "-y", "-ss", tc, "-i", video_path,
-                    "-vframes", "1", "-s", "400x225", "-f", "image2", "-vcodec", "ppm", "-"
-                ]
-                flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, creationflags=flags)
-                if res.returncode == 0 and res.stdout and len(res.stdout) > 50:
-                    ppm_data = res.stdout
-                    self.after(0, lambda d=ppm_data: self._render_ppm_on_canvas(canvas, d, target))
-            except Exception:
-                pass
+                while True:
+                    req = self._preview_pending_req.pop(target, None)
+                    if req is None:
+                        break
+                    v_path, t_pos, cv = req
+                    try:
+                        tc = format_seconds(t_pos)
+                        cmd = [
+                            FFMPEG_EXE, "-y", "-ss", tc, "-i", v_path,
+                            "-vframes", "1", "-s", "400x225", "-f", "image2", "-vcodec", "ppm", "-"
+                        ]
+                        flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+                        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, creationflags=flags, timeout=3)
+                        if res.returncode == 0 and res.stdout and len(res.stdout) > 50:
+                            ppm_data = res.stdout
+                            self.after(0, lambda d=ppm_data, c=cv, tg=target: self._render_ppm_on_canvas(c, d, tg))
+                    except Exception:
+                        pass
+            finally:
+                self._preview_worker_busy[target] = False
+                if target in self._preview_pending_req:
+                    self.extract_and_show_frame(*self._preview_pending_req[target], target=target)
+
         threading.Thread(target=worker, daemon=True).start()
 
     def _render_ppm_on_canvas(self, canvas, ppm_data, target):

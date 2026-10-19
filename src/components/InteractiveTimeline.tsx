@@ -291,43 +291,45 @@ export const InteractiveTimeline: React.FC<InteractiveTimelineProps> = ({
           </div>
         </div>
 
-        {/* Left [IN] Handle */}
+        {/* Left [IN] Handle - Offset slightly left so it never blocks the red Playhead when coinciding */}
         <div
           onMouseDown={handleStartHandleMouseDown}
-          className={`absolute top-0 bottom-0 w-6 -ml-3 cursor-ew-resize z-40 flex items-center justify-center rounded-l-md border shadow-2xl transition-transform hover:scale-110 active:scale-125 focus:outline-none ring-2 ${handleStartClass}`}
+          className={`absolute top-3 bottom-0 w-5 -ml-5 cursor-ew-resize z-40 flex items-center justify-center rounded-l-md border shadow-2xl transition-transform hover:scale-110 active:scale-125 focus:outline-none ring-2 ${handleStartClass}`}
           style={{ left: `${leftPercent}%` }}
           title="Kéo chuột để chỉnh mốc Bắt Đầu [IN]"
         >
           <div className="flex flex-col items-center justify-center pointer-events-none">
             <span className="text-[11px] font-extrabold text-white leading-none">[</span>
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-0.5" />
+            <div className="w-1 h-2.5 bg-white/70 rounded-full mt-0.5" />
           </div>
         </div>
 
-        {/* Right [OUT] Handle */}
+        {/* Right [OUT] Handle - Offset slightly right so it never blocks the red Playhead when coinciding */}
         <div
           onMouseDown={handleEndHandleMouseDown}
-          className={`absolute top-0 bottom-0 w-6 -ml-3 cursor-ew-resize z-40 flex items-center justify-center rounded-r-md border shadow-2xl transition-transform hover:scale-110 active:scale-125 focus:outline-none ring-2 ${handleEndClass}`}
+          className={`absolute top-3 bottom-0 w-5 ml-0 cursor-ew-resize z-40 flex items-center justify-center rounded-r-md border shadow-2xl transition-transform hover:scale-110 active:scale-125 focus:outline-none ring-2 ${handleEndClass}`}
           style={{ left: `${rightPercent}%` }}
           title="Kéo chuột để chỉnh mốc Kết Thúc [OUT]"
         >
           <div className="flex flex-col items-center justify-center pointer-events-none">
             <span className="text-[11px] font-extrabold text-white leading-none">]</span>
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-0.5" />
+            <div className="w-1 h-2.5 bg-white/70 rounded-full mt-0.5" />
           </div>
         </div>
 
-        {/* Playhead Needle (Current Playing Position) */}
+        {/* Playhead Needle (Current Playing Position) - Wide hit zone & top priority z-50 even when overlapping [IN]/[OUT] */}
         <div
           onMouseDown={handlePlayheadMouseDown}
-          className="absolute top-0 bottom-0 w-1 -ml-0.5 bg-rose-500 z-50 cursor-ew-resize pointer-events-auto"
+          className="absolute top-0 bottom-0 w-5 -ml-2.5 z-50 cursor-ew-resize pointer-events-auto flex flex-col items-center group/playhead"
           style={{ left: `${curPercent}%` }}
-          title="Con trỏ thời gian - Kéo chuột để tua video"
+          title="Con trỏ thời gian màu đỏ - Kéo chuột để tua video (ưu tiên ngay cả khi trùng điểm cắt)"
         >
           {/* Top handle pin */}
-          <div className="w-4 h-4 bg-rose-500 border-2 border-white rounded-full -ml-1.5 -mt-1 shadow-lg flex items-center justify-center hover:scale-125 transition-transform">
+          <div className="w-5 h-4 bg-rose-500 border-2 border-white rounded-t-md rounded-b-lg shadow-lg flex items-center justify-center group-hover/playhead:scale-125 group-hover/playhead:bg-rose-400 transition-transform">
             <div className="w-1.5 h-1.5 bg-white rounded-full" />
           </div>
+          {/* Crisp center needle line */}
+          <div className="w-0.5 flex-1 bg-rose-500 group-hover/playhead:w-1 group-hover/playhead:bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.9)]" />
         </div>
       </div>
 

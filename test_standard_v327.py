@@ -233,6 +233,155 @@ class TestFastVideoEditorV327(unittest.TestCase):
         self.assertIn("tkinterdnd2", deb_txt)
         self.assertIn("dpkg-deb --root-owner-group --build", deb_txt)
 
+    def test_07_draggable_timeline_playhead_cut_overlap_and_scrubbing(self):
+        """
+        Kiểm tra triệt để lỗi thanh tua màu đỏ (Playhead 'cur') khi trùng với điểm cắt ('start' / 'end'):
+        - Khi cur == start (ví dụ 00:00:00) hoặc cur == end (ví dụ 00:29:59):
+          + Nhấp vào đầu ghim đỏ (y < track_y) hoặc tâm kim đỏ (x == x_cur) PHẢI chọn 'cur' (kéo thanh tua màu đỏ),
+            tuyệt đối không kéo nhầm điểm cắt và không làm thay đổi mốc cắt start/end.
+          + Nhấp vào cánh ngoài bên trái của tam giác Đầu (x_s - 6, y >= track_y) vẫn kéo được 'start'.
+          + Nhấp vào cánh ngoài bên phải của tam giác Cuối (x_e + 6, y >= track_y) vẫn kéo được 'end'.
+        """
+        class FakeCanvasBase:
+            def __init__(self, parent=None, **kwargs):
+                self._w_px = int(kwargs.get("width", 400))
+                self._h_px = int(kwargs.get("height", 52))
+                self.cursor = kwargs.get("cursor", "hand2")
+
+            def bind(self, *args, **kwargs):
+                pass
+
+            def winfo_width(self):
+                return self._w_px
+
+            def winfo_height(self):
+                return self._h_px
+
+            def cget(self, key):
+                if key == "width":
+                    return self._w_px
+                if key == "height":
+                    return self._h_px
+                return ""
+
+            def config(self, **kwargs):
+                if "cursor" in kwargs:
+                    self.cursor = kwargs["cursor"]
+
+            def delete(self, *args):
+                pass
+
+            def create_rectangle(self, *args, **kwargs):
+                pass
+
+            def create_line(self, *args, **kwargs):
+                pass
+
+            def create_polygon(self, *args, **kwargs):
+                pass
+
+            def create_text(self, *args, **kwargs):
+                pass
+
+        class FakeTkModule:
+            Canvas = FakeCanvasBase
+
+        env = {"tk": FakeTkModule}
+        for node in self.tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "format_seconds":
+                exec(compile(ast.Module(body=[node], type_ignores=[]), "format_seconds", "exec"), env)
+            elif isinstance(node, ast.ClassDef) and node.name == "DraggableTimeline":
+                exec(compile(ast.Module(body=[node], type_ignores=[]), "DraggableTimeline", "exec"), env)
+
+        self.assertIn("DraggableTimeline", env)
+        DraggableTimeline = env["DraggableTimeline"]
+
+        seek_calls = []
+        change_calls = []
+        tl = DraggableTimeline(
+            None,
+            duration=1800.0,  # 00:30:00
+            width=400,
+            height=52,
+            on_change_callback=lambda s, e, c: change_calls.append((round(s, 1), round(e, 1), round(c, 1))),
+            on_seek_callback=lambda c: seek_calls.append(round(c, 1)),
+        )
+
+        class Ev:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        # =================================================================
+        # CASE 1 (Hình 2): Thanh tua màu đỏ trùng với Điểm Đầu [IN] tại 00:00:00
+        # =================================================================
+        tl.set_times(0.0, 900.0, 0.0)
+        x_s = tl._time_to_x(0.0)
+        x_cur = tl._time_to_x(0.0)
+        self.assertAlmostEqual(x_s, x_cur)
+
+        # 1a. Nhấp vào đầu ghim màu đỏ (y=10) hoặc tâm kim đỏ (y=26) tại x_cur -> Phải bắt đúng 'cur'!
+        self.assertEqual(tl._pick_handle(x_cur, 10), "cur")
+        self.assertEqual(tl._pick_handle(x_cur, 26), "cur")
+
+        # 1b. Thực hiện Click & Kéo từ x_cur sang phải (tới giữa thanh = 900s) -> Chỉ di chuyển 'cur', giữ nguyên start=0.0!
+        seek_calls.clear()
+        change_calls.clear()
+        tl.on_mouse_down(Ev(x_cur, 12))
+        self.assertEqual(tl.dragging, "cur")
+        tl.on_mouse_move(Ev(tl._time_to_x(450.0), 12))
+        tl.on_mouse_up(Ev(tl._time_to_x(450.0), 12))
+
+        self.assertAlmostEqual(tl.current_time, 450.0, places=1)
+        self.assertAlmostEqual(tl.start_time, 0.0, places=1)  # Điểm cắt Đầu KHÔNG bị kéo theo!
+        self.assertEqual(change_calls, [])  # Không kích hoạt cắt lọc nhầm!
+        self.assertTrue(len(seek_calls) >= 1 and abs(seek_calls[-1] - 450.0) < 1.0)
+
+        # 1c. Khi trùng nhau tại 0.0, nếu người dùng muốn kéo mốc Đầu [IN], nhấp vào cánh trái (x_s - 6, y=28) -> Bắt 'start'
+        tl.set_times(0.0, 900.0, 0.0)
+        self.assertEqual(tl._pick_handle(x_s - 6, 28), "start")
+
+        # =================================================================
+        # CASE 2 (Hình 1): Thanh tua màu đỏ trùng với Điểm Cuối [OUT] tại 00:29:59
+        # =================================================================
+        tl.set_times(1358.0, 1799.0, 1799.0)
+        x_e = tl._time_to_x(1799.0)
+        x_cur = tl._time_to_x(1799.0)
+        self.assertAlmostEqual(x_e, x_cur)
+
+        # 2a. Nhấp vào đầu ghim đỏ (y=10) hoặc tâm kim đỏ (y=26) tại x_cur -> Phải bắt đúng 'cur'!
+        self.assertEqual(tl._pick_handle(x_cur, 10), "cur")
+        self.assertEqual(tl._pick_handle(x_cur, 26), "cur")
+
+        # 2b. Kéo thanh tua đỏ về 1500.0s -> Chỉ di chuyển 'cur', giữ nguyên end=1799.0!
+        seek_calls.clear()
+        change_calls.clear()
+        tl.on_mouse_down(Ev(x_cur, 15))
+        self.assertEqual(tl.dragging, "cur")
+        tl.on_mouse_move(Ev(tl._time_to_x(1500.0), 15))
+        tl.on_mouse_up(Ev(tl._time_to_x(1500.0), 15))
+
+        self.assertAlmostEqual(tl.current_time, 1500.0, places=1)
+        self.assertAlmostEqual(tl.end_time, 1799.0, places=1)  # Điểm cắt Cuối KHÔNG bị kéo theo!
+        self.assertEqual(change_calls, [])
+
+        # 2c. Khi trùng nhau tại 1799.0, nếu nhấp vào cánh phải của tam giác Cuối (x_e + 6, y=28) -> Bắt 'end'
+        tl.set_times(1358.0, 1799.0, 1799.0)
+        self.assertEqual(tl._pick_handle(x_e + 6, 28), "end")
+
+        # =================================================================
+        # CASE 3: Kéo độc lập Điểm Đầu ('start') và Điểm Cuối ('end') khi không trùng
+        # =================================================================
+        tl.set_times(300.0, 1200.0, 750.0)
+        change_calls.clear()
+        tl.on_mouse_down(Ev(tl._time_to_x(300.0), 28))
+        self.assertEqual(tl.dragging, "start")
+        tl.on_mouse_move(Ev(tl._time_to_x(400.0), 28))
+        tl.on_mouse_up(Ev(tl._time_to_x(400.0), 28))
+        self.assertAlmostEqual(tl.start_time, 400.0, places=1)
+        self.assertAlmostEqual(tl.current_time, 750.0, places=1)
+        self.assertTrue(len(change_calls) >= 1)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
