@@ -6,3 +6,14 @@ coverage/
 *.log
 .env*
 !.env.example
+__pycache__/
+*.py[cod]
+*$py.class
+build_deb/
+Output/
+test_output/
+test_samples/
+*.deb
+*.AppImage
+*.exe
+*.zip

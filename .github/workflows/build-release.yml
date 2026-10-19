@@ -12,6 +12,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-windows:
     name: Build Windows Executable & Installer (.exe)
@@ -28,29 +31,39 @@ jobs:
       - name: Install Build Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pillow tkinterdnd2 requests
+          pip install pyinstaller pillow tkinterdnd2 windnd requests
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconfirm --onedir --windowed --icon=icon.ico --name FastVideoEditor fast_video_editor.py
-          if (Test-Path "icon.ico") { copy icon.ico dist\FastVideoEditor\ }
-          copy fast_video_editor.py dist\FastVideoEditor\
-          copy setup_wizard.py dist\FastVideoEditor\
-          copy run_windows.bat dist\FastVideoEditor\
+          pyinstaller --noconfirm --onedir --windowed --collect-all tkinterdnd2 --icon=icon.ico --name FastVideoEditor fast_video_editor.py
+          if (Test-Path "icon.ico") { Copy-Item "icon.ico" "dist\FastVideoEditor\" -Force }
+          if (Test-Path "icon.png") { Copy-Item "icon.png" "dist\FastVideoEditor\" -Force }
+          if (Test-Path "fast-video-editor.png") { Copy-Item "fast-video-editor.png" "dist\FastVideoEditor\" -Force }
+          Copy-Item "fast_video_editor.py" "dist\FastVideoEditor\" -Force
+          Copy-Item "setup_wizard.py" "dist\FastVideoEditor\" -Force
+          Copy-Item "run_windows.bat" "dist\FastVideoEditor\" -Force
 
       - name: Install Inno Setup and Compile Installer
         run: |
-          choco install innosetup -y
           $isccPath = ""
-          if (Get-Command "iscc.exe" -ErrorAction SilentlyContinue) {
-            $isccPath = "iscc.exe"
-          } elseif (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+          if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
             $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
           } elseif (Test-Path "C:\Program Files\Inno Setup 6\ISCC.exe") {
             $isccPath = "C:\Program Files\Inno Setup 6\ISCC.exe"
+          } elseif (Get-Command "iscc.exe" -ErrorAction SilentlyContinue) {
+            $isccPath = "iscc.exe"
+          }
+          if (-not $isccPath) {
+            choco install innosetup -y --no-progress
+            if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+              $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+            } elseif (Get-Command "iscc.exe" -ErrorAction SilentlyContinue) {
+              $isccPath = "iscc.exe"
+            }
           }
           if ($isccPath) {
             Write-Host "Found ISCC at $isccPath, compiling installer_windows.iss..."
+            New-Item -ItemType Directory -Force -Path "Output" | Out-Null
             & $isccPath installer_windows.iss
           } else {
             Write-Warning "ISCC.exe not found!"
@@ -59,17 +72,23 @@ jobs:
 
       - name: Archive Portable Zip
         run: |
-          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.6-Windows-Portable.zip -Force
+          Compress-Archive -Path dist\FastVideoEditor\* -DestinationPath FastVideoEditor-v3.2.7-Windows-Portable.zip -Force
 
       - name: Prepare Windows Release Binaries
         run: |
-          mkdir build_assets
-          Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor-v3.2.6-Setup.exe"
-          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.6-Setup.exe")) {
-            Get-ChildItem -Path "dist\FastVideoEditor\FastVideoEditor.exe" -ErrorAction SilentlyContinue | Copy-Item -Destination "build_assets\FastVideoEditor.exe"
+          New-Item -ItemType Directory -Force -Path "build_assets" | Out-Null
+          if (Test-Path "Output") {
+            Get-ChildItem -Path "Output\*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object {
+              Copy-Item $_.FullName -Destination "build_assets\FastVideoEditor-v3.2.7-Setup.exe" -Force
+            }
           }
-          Copy-Item "FastVideoEditor-v3.2.6-Windows-Portable.zip" "build_assets\"
-          Copy-Item "fast_video_editor.py" "build_assets\"
+          if (-not (Test-Path "build_assets\FastVideoEditor-v3.2.7-Setup.exe")) {
+            if (Test-Path "dist\FastVideoEditor\FastVideoEditor.exe") {
+              Copy-Item "dist\FastVideoEditor\FastVideoEditor.exe" -Destination "build_assets\FastVideoEditor.exe" -Force
+            }
+          }
+          Copy-Item "FastVideoEditor-v3.2.7-Windows-Portable.zip" "build_assets\" -Force
+          Copy-Item "fast_video_editor.py" "build_assets\" -Force
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
@@ -122,32 +141,47 @@ jobs:
           name: linux-binaries
           path: release_files
 
-      - name: Determine Tag Name
+      - name: Determine Tag Name & Handle Immutable Releases
         id: get_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            BASE_TAG="${GITHUB_REF#refs/tags/}"
           else
-            TAG_NAME="v3.2.6"
+            BASE_TAG=$(python3 -c 'import re; m=re.search(r"CURRENT_APP_VERSION\s*=\s*\"([^\"]+)\"", open("fast_video_editor.py", encoding="utf-8").read()); print(m.group(1) if m else "v3.2.7")' 2>/dev/null || echo "v3.2.7")
+          fi
+          TAG_NAME="${BASE_TAG}"
+          # Kiểm tra nếu tag đã tồn tại trên GitHub Releases (chống lỗi Immutable Release: Cannot delete asset from an immutable release)
+          if gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${TAG_NAME} already exists. Checking if replaceable..."
+            if ! gh release delete "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --cleanup-tag --yes >/dev/null 2>&1; then
+              echo "Release ${TAG_NAME} is immutable. Using unique build tag ${BASE_TAG}.${GITHUB_RUN_NUMBER}"
+              TAG_NAME="${BASE_TAG}.${GITHUB_RUN_NUMBER}"
+            fi
           fi
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "Resolved release tag: ${TAG_NAME}"
 
       - name: Create or Update GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
-          name: "Fast Video Cutter & Merger Studio ${{ steps.get_version.outputs.TAG_NAME }} PRO"
-          body: |
-            🚀 **Tự động đóng gói phát hành tự động qua GitHub Actions CI/CD (v3.2.6 PRO)**
-            Tác giả: TRỊNH PHI LÍP (philiptrinh1990@gmail.com, Zalo: 0917417252)
-            
-            ### 📌 Thông tin bản cập nhật ${{ steps.get_version.outputs.TAG_NAME }} PRO:
-            - ⚡ Tự động build ra file cài đặt Windows `.exe` (`FastVideoEditor-v3.2.6-Setup.exe`)
-            - 📦 Tự động nén bản Portable `.zip` chạy không cần cài đặt (`FastVideoEditor-v3.2.6-Windows-Portable.zip`)
-            - 🔄 Cập nhật động cơ Auto-Update 1-Click nâng cấp ứng dụng trực tiếp hiển thị % tiến độ thời gian thực
-            - 🎯 Hoàn thiện tính năng Kéo & Thả Video 100% hoàn hảo trên Linux & Windows
-          files: release_files/*
-          draft: false
-          prerelease: false
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.get_version.outputs.TAG_NAME }}"
+          NOTES="🚀 **Tự động đóng gói phát hành qua GitHub Actions CI/CD (v3.2.7 PRO)**
+          Tác giả: TRỊNH PHI LÍP (Email: philiptrinh1990@gmail.com, Zalo: 0917417252, VPBank: 0917417252)
+
+          ### 📌 Thông tin bản cập nhật ${TAG} PRO:
+          - ⚡ Tự động build ra file cài đặt Windows \`.exe\` (\`FastVideoEditor-v3.2.7-Setup.exe\`)
+          - 📦 Tự động nén bản Portable \`.zip\` chạy không cần cài đặt (\`FastVideoEditor-v3.2.7-Windows-Portable.zip\`)
+          - 🐧 Tự động đóng gói bản cài đặt Linux Debian/Ubuntu (\`fast-video-editor_3.2.7_amd64.deb\`) tích hợp sẵn thư viện kéo thả \`tkinterdnd2\`
+          - 🔄 Động cơ Auto-Update 1-Click thông báo bản mới (lựa chọn Cập nhật ngay hoặc Bỏ qua), khắc phục triệt để lỗi ở mốc 20% / 40%
+          - 🎯 Hoàn thiện tính năng Kéo & Thả Video 100% vào khung trên Linux (Nautilus, Dolphin, Thunar, Nemo) & Windows"
+
+          gh release create "${TAG}" release_files/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "Fast Video Cutter & Merger Studio ${TAG} PRO" \
+            --notes "${NOTES}" \
+            --latest

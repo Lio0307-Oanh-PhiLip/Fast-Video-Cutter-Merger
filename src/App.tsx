@@ -48,14 +48,14 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
                   <span>Fast Video Cutter &amp; Merger</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v3.2.3 PRO</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v3.2.7 PRO</span>
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Lossless &amp; Smart-Merge
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Ứng dụng xử lý video siêu tốc 1-3s hỗ trợ đóng gói cài đặt cho cả <strong>Windows 10/11</strong> &amp; <strong>Linux</strong>
+                Ứng dụng xử lý video siêu tốc 1-3s cho <strong>Windows 10/11</strong> &amp; <strong>Linux</strong> • Tác giả: <strong>TRỊNH PHI LÍP</strong> (Zalo/VPBank: <strong>0917417252</strong>)
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function App() {
             {/* Left title & icon */}
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-300">
               <Zap className="w-4 h-4 text-indigo-400" />
-              <span>Fast Video Cutter &amp; Merger (Lossless) - [{currentOs === 'windows' ? 'Windows 11 Native' : 'Linux GTK / GNOME'}]</span>
+              <span>Fast Video Cutter &amp; Merger Studio v3.2.7 PRO (Lossless) - [{currentOs === 'windows' ? 'Windows 11 Native' : 'Linux GTK / GNOME'}]</span>
             </div>
 
             {/* Right window control buttons */}
@@ -273,10 +273,10 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-800 bg-slate-950 py-5 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300">Fast Video Cutter &amp; Merger (Lossless)</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-slate-300">Fast Video Cutter &amp; Merger v3.2.7 PRO</span>
             <span>•</span>
-            <span>Bộ cài đặt tự động cho Windows (.exe) &amp; Linux (.deb, AppImage)</span>
+            <span>Bản quyền tác giả: <strong className="text-emerald-400">TRỊNH PHI LÍP</strong> (Mail: <span className="text-slate-300">philiptrinh1990@gmail.com</span> | Zalo: <span className="text-sky-400">0917417252</span> | VPBank: <span className="text-amber-400">0917417252</span>)</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">

@@ -44,7 +44,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <h2 className="text-lg font-bold flex items-center gap-2 text-white">
               <span>Cài Đặt Hệ Thống &amp; Môi Trường FFmpeg</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
-                v2026.1 Win &amp; Linux
+                v3.2.7 PRO Win &amp; Linux
               </span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -390,6 +390,48 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               </p>
             </div>
           </label>
+        </div>
+      </div>
+
+      {/* Section 3: Author Copyright & VPBank QR Code */}
+      <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-2.5 text-xs flex-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+              Bản Quyền Tác Giả • v3.2.7 PRO
+            </span>
+          </div>
+          <h3 className="text-base font-bold text-white">
+            Tác giả: <span className="text-emerald-400">TRỊNH PHI LÍP</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300 pt-1">
+            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+              <div className="text-slate-400 text-[11px]">Email liên hệ:</div>
+              <div className="font-mono font-bold text-white mt-0.5">philiptrinh1990@gmail.com</div>
+            </div>
+            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+              <div className="text-slate-400 text-[11px]">Zalo hỗ trợ:</div>
+              <div className="font-mono font-bold text-sky-400 mt-0.5">0917417252</div>
+            </div>
+            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 sm:col-span-2">
+              <div className="text-slate-400 text-[11px]">Tài khoản ngân hàng (QR VPBank):</div>
+              <div className="font-mono font-bold text-amber-400 mt-0.5">0917417252 - Ngân hàng VPBank (TRỊNH PHI LÍP)</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 flex flex-col items-center shrink-0">
+          <img
+            src="https://img.vietqr.io/image/VPB-0917417252-compact.png?accountName=TRINH%20PHI%20LIP"
+            alt="QR Tài Khoản 0917417252 VPBank - TRỊNH PHI LÍP"
+            className="w-36 h-36 rounded-lg bg-white p-1.5 object-contain"
+          />
+          <span className="text-[11px] font-bold text-amber-400 mt-2">
+            QR VPBank: 0917417252
+          </span>
+          <span className="text-[10px] text-slate-400">
+            TRỊNH PHI LÍP
+          </span>
         </div>
       </div>
     </div>
