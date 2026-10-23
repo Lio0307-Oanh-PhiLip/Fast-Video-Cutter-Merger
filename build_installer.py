@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.8 PRO
+  Fast Video Cutter & Merger Studio v3.2.9 PRO
   Tác giả: TRỊNH PHI LÍP (philiptrinh1990@gmail.com | Zalo/VPBank: 0917417252)
   Automated 1-Click Installer Builder (PyInstaller + Inno Setup 6 Auto-Setup)
 =============================================================================
@@ -134,7 +134,7 @@ def download_and_install_inno_setup(target_dir):
 
 def main():
     print("==============================================================")
-    print("   FAST VIDEO CUTTER & MERGER STUDIO v3.2.8 PRO")
+    print("   FAST VIDEO CUTTER & MERGER STUDIO v3.2.9 PRO")
     print("   Trinh Dong Goi 1-Click [PyInstaller + Inno Setup 6]")
     print("==============================================================")
     print()
@@ -187,10 +187,10 @@ def main():
 
     if iscc_exe and os.path.isfile(iscc_exe):
         log(f"Su dung Inno Setup Compiler: {iscc_exe}")
-        log("Dang bien dich file cai dat Next-Next: FastVideoEditor_v3.2.8_Setup.exe...")
+        log("Dang bien dich file cai dat Next-Next: FastVideoEditor_v3.2.9_Setup.exe...")
         os.makedirs("Output", exist_ok=True)
         res = subprocess.run([iscc_exe, "installer_windows.iss"])
-        setup_exe = os.path.join("Output", "FastVideoEditor_v3.2.8_Setup.exe")
+        setup_exe = os.path.join("Output", "FastVideoEditor_v3.2.9_Setup.exe")
         if os.path.exists(setup_exe):
             sz_mb = os.path.getsize(setup_exe) / (1024 * 1024)
             print()

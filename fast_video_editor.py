@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.8 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.9 PRO (Lossless Stream Copy)
   Đồng bộ Logo biểu tượng & Taskbar Icon chuyên nghiệp cho cả Windows & Linux
   Hỗ trợ Kéo & Thả Video 100% Hoàn Hảo (Linux Nautilus/Dolphin & Windows Explorer)
 =============================================================================
@@ -24,10 +24,10 @@ AUTHOR_BANK = "0917417252 - VPBank (TRỊNH PHI LÍP)"
 
 """
 =============================================================================
-  Fast Video Cutter & Merger Studio v3.2.8 PRO (Lossless Stream Copy)
+  Fast Video Cutter & Merger Studio v3.2.9 PRO (Lossless Stream Copy)
   Hỗ trợ cả Windows 10/11 & Linux (Ubuntu, Debian, Fedora, Arch...)
   Nguyên lý: Stream Copy với FFmpeg (Không re-encode, tốc độ ghi đĩa thực tế)
-  Nâng cấp v3.2.8 PRO:
+  Nâng cấp v3.2.9 PRO:
     - Tối ưu hóa 100% Động Cơ Tự Động Cập Nhật GitHub cho cả Windows (.exe) và Linux (.deb/.sh)
     - Hệ thống thông báo khi có bản cập nhật mới kèm lựa chọn Cập nhật ngay hoặc Bỏ qua
     - Khắc phục triệt để lỗi cập nhật ở mốc 40% (khi đang ở bản mới nhất) và mốc 20% (tải bản mới)
@@ -67,10 +67,10 @@ except ImportError:
             pass
     else:
         try:
-            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.8", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
+            subprocess.run(["zenity", "--error", "--title=Fast Video Editor v3.2.9", "--text=Thiếu thư viện python3-tk!\nVui lòng mở Terminal và chạy lệnh:\nsudo apt install python3-tk ffmpeg -y"], timeout=5)
         except Exception:
             try:
-                subprocess.run(["notify-send", "Fast Video Editor v3.2.8", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
+                subprocess.run(["notify-send", "Fast Video Editor v3.2.9", "Thiếu python3-tk! Hãy chạy: sudo apt install python3-tk"], timeout=5)
             except Exception:
                 pass
     print(f"[ERROR] {err_txt}")
@@ -129,7 +129,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
     print(f"[CRASH_LOG] {err_str}", file=sys.stderr)
     try:
         messagebox.showerror(
-            "Lỗi Ứng Dụng (v3.2.8 PRO)", 
+            "Lỗi Ứng Dụng (v3.2.9 PRO)", 
             f"Đã phát hiện lỗi thực thi:\n\n{str(exc_value)}\n\nChi tiết xem tại file 'crash_log.txt'."
         )
     except Exception:
@@ -139,7 +139,7 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Đã phát hiện sự cố khởi chạy ứng dụng:\n\n{str(exc_value)}\n\nChi tiết đã ghi vào file crash_log.txt", 
-                    "Sự Cố Fast Video Editor v3.2.8", 
+                    "Sự Cố Fast Video Editor v3.2.9", 
                     0x10
                 )
             except Exception:
@@ -148,9 +148,9 @@ def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_uncaught_exception
 
 # =====================================================================
-# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.8 PRO)
+# BỘ CẤU HÌNH & TỰ ĐỘNG CẬP NHẬT GITHUB LINH HOẠT (v3.2.9 PRO)
 # =====================================================================
-CURRENT_APP_VERSION = "v3.2.8"
+CURRENT_APP_VERSION = "v3.2.9"
 DEFAULT_GITHUB_REPO = "Lio0307-Oanh-PhiLip/Fast-Video-Cutter-Merger"
 
 def get_config_file_path():
@@ -203,7 +203,7 @@ def is_version_newer(remote_v_str, local_v_str):
     return tuple(r_tup) > tuple(l_tup)
 
 def check_github_update_sync(custom_repo=None, force_check=False):
-    """Kiểm tra cập nhật từ GitHub (v3.2.8 PRO) - Khắc phục triệt để lỗi ở mốc 40% và lọc bỏ bản cũ"""
+    """Kiểm tra cập nhật từ GitHub (v3.2.9 PRO) - Khắc phục triệt để lỗi ở mốc 40% và lọc bỏ bản cũ"""
     repo = clean_github_repo_name(custom_repo or load_app_config().get("github_repo", DEFAULT_GITHUB_REPO))
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -295,7 +295,7 @@ def check_github_update_sync(custom_repo=None, force_check=False):
 
 
 class AppUpdateDialog(tk.Toplevel):
-    """Hộp thoại Thông Báo & Tự Động Nâng Cấp Ứng Dụng Từ GitHub (Cập nhật ngay / Bỏ qua) - v3.2.8 PRO"""
+    """Hộp thoại Thông Báo & Tự Động Nâng Cấp Ứng Dụng Từ GitHub (Cập nhật ngay / Bỏ qua) - v3.2.9 PRO"""
     def __init__(self, parent, update_info=None):
         super().__init__(parent)
         self.parent = parent
@@ -595,7 +595,7 @@ class AppUpdateDialog(tk.Toplevel):
             self.update_ui(f"✅ Đã tải xong phiên bản {tag}! Đang khởi chạy nâng cấp tự động...", 95)
             time.sleep(0.4)
 
-            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.8 PRO)
+            # 3. Kích hoạt cập nhật & Tự động khởi động lại ứng dụng (v3.2.9 PRO)
             sha = self.update_info.get("sha")
             if sha:
                 try:
@@ -615,7 +615,7 @@ class AppUpdateDialog(tk.Toplevel):
                 python_exe = sys.executable
 
                 bat_content = f"""@echo off
-title Fast Video Editor v3.2.8 - Automatic Installer
+title Fast Video Editor v3.2.9 - Automatic Installer
 echo [INFO] Dang cho ung dung cu thoat an toan...
 timeout /t 2 /nobreak > nul
 
@@ -626,7 +626,7 @@ if exist "{raw_script_path}" (
 )
 """
                 if dest_path.lower().endswith(".exe"):
-                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.8 vao thu muc {app_dir}...
+                    bat_content += f"""echo [INFO] Dang chay trinh cai dat v3.2.9 vao thu muc {app_dir}...
 start /wait "" "{dest_path}" /SILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR="{app_dir}"
 timeout /t 2 /nobreak > nul
 if exist "{target_exe}" (
@@ -680,7 +680,7 @@ exit /b 0
                 script_p = os.path.abspath(sys.argv[0])
 
                 sh_content = f"""#!/usr/bin/env bash
-# Fast Video Editor Auto-Updater for Linux (v3.2.8 PRO)
+# Fast Video Editor Auto-Updater for Linux (v3.2.9 PRO)
 sleep 1
 
 # 1. Ghi de file ma nguon fast_video_editor.py vao app_dir ({app_dir})
@@ -742,11 +742,11 @@ exit 0
 
 
 # =====================================================================
-# HỖ TRỢ KÉO & THẢ VIDEO CHUYÊN NGHIỆP TRÊN CẢ WINDOWS & LINUX (ZERO-CRASH v3.2.8 PRO)
+# HỖ TRỢ KÉO & THẢ VIDEO CHUYÊN NGHIỆP TRÊN CẢ WINDOWS & LINUX (ZERO-CRASH v3.2.9 PRO)
 # =====================================================================
 def ensure_tkinterdnd2_ready():
     """
-    Tự động nạp hoặc cài đặt thư viện kéo thả tkinterdnd2 cho Linux & Windows (Zero-Pip Bootstrap v3.2.8 PRO).
+    Tự động nạp hoặc cài đặt thư viện kéo thả tkinterdnd2 cho Linux & Windows (Zero-Pip Bootstrap v3.2.9 PRO).
     Hoạt động ngay cả khi máy Linux không có pip hoặc bị chặn bởi PEP 668 (Ubuntu 24.04 / Debian 12).
     """
     lib_candidates = [
@@ -827,7 +827,7 @@ _BaseTkClass = TkinterDnD_Tk if (HAS_TKDND and TkinterDnD_Tk is not None) else t
 
 class BaseAppWindow(_BaseTkClass):
     """
-    Cửa sổ gốc Tkinter kế thừa trực tiếp TkinterDnD.Tk / DnDWrapper (v3.2.8 PRO).
+    Cửa sổ gốc Tkinter kế thừa trực tiếp TkinterDnD.Tk / DnDWrapper (v3.2.9 PRO).
     Đảm bảo cả cửa sổ chính và mọi khung con đều hỗ trợ drop_target_register & dnd_bind chuẩn XDND trên Linux & Windows.
     """
     def __init__(self, *args, **kwargs):
@@ -926,7 +926,7 @@ class BaseAppWindow(_BaseTkClass):
 
 def setup_windows_native_drag_drop(window, on_drop_callback):
     """
-    Hook Drag & Drop an toàn 100% trên Windows (v3.2.8 PRO).
+    Hook Drag & Drop an toàn 100% trên Windows (v3.2.9 PRO).
     Tích hợp đa tầng: windnd (nếu có) + DragAcceptFiles Win32.
     Mọi luồng xử lý đều bọc try/except tuyệt đối, không đè WndProc gây crash 0xC0000005.
     """
@@ -1289,7 +1289,7 @@ def get_video_duration(video_path):
 
 
 def get_video_stream_info(video_path):
-    """Lấy chi tiết codec video, audio, độ phân giải và framerate (v3.2.8 PRO Smart-Merge)"""
+    """Lấy chi tiết codec video, audio, độ phân giải và framerate (v3.2.9 PRO Smart-Merge)"""
     info = {
         "v_codec": "h264",
         "a_codec": "aac",
@@ -1447,7 +1447,7 @@ def run_ffmpeg_with_progress(cmd, total_duration, on_progress_callback=None, fla
 
 class DraggableTimeline(tk.Canvas):
     """
-    Thanh Timeline Tương Tác Chuẩn Studio (v3.2.8 PRO):
+    Thanh Timeline Tương Tác Chuẩn Studio (v3.2.9 PRO):
     - Tách biệt rõ ràng vùng nắm Kéo Tua Thời Gian Màu Đỏ (Playhead 'cur' ở nửa trên) và vùng Mốc Cắt [Đầu 'start' / Cuối 'end'] ở nửa dưới.
     - Khi con trỏ màu đỏ (Playhead) trùng với điểm cắt Đầu hoặc Cuối, ưu tiên tuyệt đối thao tác kéo thanh tua màu đỏ (Playhead)
       khi nhấp vào đầu ghim đỏ hoặc thân kim đỏ; chỉ kéo mốc cắt khi nhấp vào cánh tam giác bên ngoài của mốc cắt.
@@ -1750,7 +1750,7 @@ class DraggableTimeline(tk.Canvas):
 
 
 # =====================================================================
-# Main Application Class: Fast Video Cutter & Merger Studio v3.2.8 PRO
+# Main Application Class: Fast Video Cutter & Merger Studio v3.2.9 PRO
 # =====================================================================
 
 # =====================================================================
@@ -1759,7 +1759,7 @@ class DraggableTimeline(tk.Canvas):
 class FFmpegDownloadDialog(tk.Toplevel):
     def __init__(self, parent, on_success_callback=None):
         super().__init__(parent)
-        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.8")
+        self.title("⚡ Tự Động Tải & Cài Đặt FFmpeg Essentials v3.2.9")
         self.geometry("540x260")
         self.resizable(False, False)
         self.configure(bg="#0f172a")
@@ -1788,7 +1788,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
         hdr.pack(fill="x")
         tk.Label(
             hdr, 
-            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.8 PRO)", 
+            text="⚡ Tải & Cài Đặt Bộ Công Cụ FFmpeg (v3.2.9 PRO)", 
             font=("Segoe UI", 11, "bold"), 
             fg="#ffffff", 
             bg="#1e293b"
@@ -2017,7 +2017,7 @@ class FFmpegDownloadDialog(tk.Toplevel):
             self.btn_action.config(text="Đóng", bg="#10b981", command=self.destroy)
             if hasattr(self.parent_app, "refresh_ffmpeg_status"):
                 self.parent_app.refresh_ffmpeg_status()
-            messagebox.showinfo("Thành Công", "Đã cài đặt và kích hoạt FFmpeg v3.2.8 thành công!\nBây giờ bạn có thể cắt và phát video ngay lập tức.")
+            messagebox.showinfo("Thành Công", "Đã cài đặt và kích hoạt FFmpeg v3.2.9 thành công!\nBây giờ bạn có thể cắt và phát video ngay lập tức.")
             self.destroy()
             if self.on_success:
                 try:
@@ -2044,7 +2044,7 @@ class VideoEditorApp(BaseAppWindow):
             super().__init__(className="fast-video-editor")
         except Exception:
             super().__init__()
-        self.title("Fast Video Cutter & Merger Studio v3.2.8 PRO (Lossless Stream Copy)")
+        self.title("Fast Video Cutter & Merger Studio v3.2.9 PRO (Lossless Stream Copy)")
         self.geometry("1120x760")
         self.minsize(880, 580)
         self.configure(bg="#0f172a")
@@ -2082,7 +2082,7 @@ class VideoEditorApp(BaseAppWindow):
         self.convert_strip_audio_var = tk.BooleanVar(value=False)
         self.convert_strip_video_var = tk.BooleanVar(value=False)
 
-        # Output Management & Hardware Acceleration v3.2.8
+        # Output Management & Hardware Acceleration v3.2.9
         self.last_output_file = None
         self.global_out_dir_var = tk.StringVar(value="")
         self.hw_accel_info = detect_best_hardware_encoder()
@@ -2123,7 +2123,7 @@ class VideoEditorApp(BaseAppWindow):
 
         # =====================================================================
         # 1. BẢO VỆ THANH ĐÁY (BOTTOM DOCK): PACK FIRST Ở side="bottom"
-        # Bảo đảm 100% không bao giờ bị cắt chữ khi thu nhỏ cửa sổ (v3.2.8 PRO)
+        # Bảo đảm 100% không bao giờ bị cắt chữ khi thu nhỏ cửa sổ (v3.2.9 PRO)
         # =====================================================================
         self.bottom_dock = tk.Frame(self, bg="#0f172a", bd=1, relief="ridge")
         self.bottom_dock.pack(side="bottom", fill="x")
@@ -2179,7 +2179,7 @@ class VideoEditorApp(BaseAppWindow):
         # Kích hoạt bắt sự kiện kéo thả file an toàn sau khi window đã render ổn định
         self.after(200, self.init_drag_and_drop_handlers)
 
-        # Xử lý các file được truyền qua tham số dòng lệnh hoặc khi kéo thả vào shortcut / file .bat (v3.2.8 PRO)
+        # Xử lý các file được truyền qua tham số dòng lệnh hoặc khi kéo thả vào shortcut / file .bat (v3.2.9 PRO)
         if len(sys.argv) > 1:
             init_args = sys.argv[1:]
             self.after(600, lambda: self.handle_initial_files(init_args))
@@ -2189,7 +2189,7 @@ class VideoEditorApp(BaseAppWindow):
 
     
     # =================================================================
-    # THANH MENU ỨNG DỤNG TOP BAR CHUYÊN NGHIỆP (v3.2.8 PRO)
+    # THANH MENU ỨNG DỤNG TOP BAR CHUYÊN NGHIỆP (v3.2.9 PRO)
     # =================================================================
     def setup_app_menu(self):
         """Khởi tạo Thanh Menu Ứng Dụng (Top Menu Bar) hiển thị trên cùng cửa sổ"""
@@ -2287,11 +2287,11 @@ class VideoEditorApp(BaseAppWindow):
                 messagebox.showerror("Lỗi", f"Không thể mở file log: {e}")
 
     def show_about_dialog(self):
-        """Hộp thoại Giới Thiệu & Bản Quyền Tác Giả TRỊNH PHI LÍP kèm Mã QR Tài Khoản 0917417252 VPBank (v3.2.8 PRO)"""
+        """Hộp thoại Giới Thiệu & Bản Quyền Tác Giả TRỊNH PHI LÍP kèm Mã QR Tài Khoản 0917417252 VPBank (v3.2.9 PRO)"""
         try:
             dlg = tk.Toplevel(self)
             dlg.title(f"ℹ️ Giới Thiệu & Bản Quyền Tác Giả - {CURRENT_APP_VERSION} PRO")
-            dlg.geometry("620x350")
+            dlg.geometry("720x380")
             dlg.resizable(False, False)
             dlg.configure(bg="#0f172a")
             dlg.transient(self)
@@ -2326,7 +2326,8 @@ class VideoEditorApp(BaseAppWindow):
                 ("💬 Zalo hỗ trợ:", AUTHOR_ZALO, "#38bdf8"),
                 ("🏦 Tài khoản ủng hộ:", "0917417252 - Ngân hàng VPBank", "#fbbf24"),
                 ("📂 Thư mục dữ liệu:", get_user_data_dir(), "#94a3b8"),
-                ("🌐 Kho GitHub:", f"github.com/{load_app_config().get('github_repo', DEFAULT_GITHUB_REPO)}", "#a5b4fc"),
+                # Ẩn dòng "Kho GitHub" theo yêu cầu của tác giả (v3.2.9) — giữ lại comment để bật lại khi cần:
+                # ("🌐 Kho GitHub:", f"github.com/{load_app_config().get('github_repo', DEFAULT_GITHUB_REPO)}", "#a5b4fc"),
             ]
             for label_txt, val_txt, col in info_lines:
                 row = tk.Frame(left_col, bg="#0f172a", pady=3)
@@ -2379,7 +2380,7 @@ class VideoEditorApp(BaseAppWindow):
         if os.name == "nt":
             try:
                 import ctypes
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("FastVideoEditor.Studio.v3.2.8")
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("FastVideoEditor.Studio.v3.2.9")
             except Exception:
                 pass
 
@@ -2413,7 +2414,7 @@ class VideoEditorApp(BaseAppWindow):
                 pass
 
     def setup_output_bar(self, parent=None):
-        """Thanh điều khiển Thư Mục Đầu Ra & Mở Nhanh File Kết Quả (v3.2.8 PRO)"""
+        """Thanh điều khiển Thư Mục Đầu Ra & Mở Nhanh File Kết Quả (v3.2.9 PRO)"""
         target_parent = parent if parent is not None else getattr(self, "bottom_dock", self)
         out_bar = tk.Frame(target_parent, bg="#0b1329", padx=12, pady=4, highlightthickness=1, highlightbackground="#1e293b")
         out_bar.pack(fill="x")
@@ -2605,7 +2606,7 @@ class VideoEditorApp(BaseAppWindow):
 
         title_lbl = tk.Label(
             header_frame, 
-            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.8 PRO", 
+            text="⚡ FAST VIDEO CUTTER & MERGER v3.2.9 PRO", 
             font=("Segoe UI", 12, "bold"), 
             fg="#38bdf8", 
             bg="#1e293b"
@@ -2712,7 +2713,7 @@ class VideoEditorApp(BaseAppWindow):
 
         msg = (
             "Chưa tìm thấy bộ công cụ FFmpeg trên máy tính.\n\n"
-            "Bạn có muốn hệ thống tự động tải và kích hoạt đầy đủ FFmpeg v3.2.8 ngay lập tức không?"
+            "Bạn có muốn hệ thống tự động tải và kích hoạt đầy đủ FFmpeg v3.2.9 ngay lập tức không?"
         )
         if messagebox.askyesno("Thiếu Công Cụ FFmpeg", msg):
             self.start_auto_download_ffmpeg(on_finished_callback=on_ready_callback)
@@ -2721,7 +2722,7 @@ class VideoEditorApp(BaseAppWindow):
         return False
 
     # =================================================================
-    # KÍCH HOẠT KÉO THẢ FILE TRỰC TIẾP AN TOÀN (ZERO CRASH v3.2.8 PRO)
+    # KÍCH HOẠT KÉO THẢ FILE TRỰC TIẾP AN TOÀN (ZERO CRASH v3.2.9 PRO)
     # =================================================================
     def _clean_single_path(self, raw_p):
         """Làm sạch và kiểm tra tồn tại của một đường dẫn kéo thả bất kỳ (hỗ trợ Windows URI, Linux URI, Space, Unquote)"""
@@ -2754,7 +2755,7 @@ class VideoEditorApp(BaseAppWindow):
         return ""
 
     def _parse_dnd_event_data(self, data_str):
-        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar, Nemo & Windows Explorer (v3.2.8 PRO)"""
+        """Phân tích dữ liệu kéo thả từ TkinterDnD2, windnd, Nautilus, Dolphin, Thunar, Nemo & Windows Explorer (v3.2.9 PRO)"""
         if not data_str:
             return []
         clean_list = []
@@ -2915,7 +2916,7 @@ class VideoEditorApp(BaseAppWindow):
             pass
 
     def init_drag_and_drop_handlers(self):
-        """Khởi tạo kéo thả file an toàn 100% vào khung trên cả Linux (Nautilus/Dolphin/Thunar/Nemo) và Windows (v3.2.8 PRO)"""
+        """Khởi tạo kéo thả file an toàn 100% vào khung trên cả Linux (Nautilus/Dolphin/Thunar/Nemo) và Windows (v3.2.9 PRO)"""
         try:
             self.update_idletasks()
         except Exception:
@@ -2992,7 +2993,7 @@ class VideoEditorApp(BaseAppWindow):
 
 
     def handle_initial_files(self, args_list):
-        """Xử lý khi người dùng kéo thả file vào shortcut, file .bat, hoặc chạy dòng lệnh (v3.2.8 PRO)"""
+        """Xử lý khi người dùng kéo thả file vào shortcut, file .bat, hoặc chạy dòng lệnh (v3.2.9 PRO)"""
         try:
             valid_files = []
             for a in args_list:
@@ -3401,7 +3402,7 @@ class VideoEditorApp(BaseAppWindow):
             pass
 
     # =================================================================
-    # TAB 2: GHÉP VIDEO v3.2.8 PRO (KÉO CHUỘT MƯỢT MÀ & KÉO THẢ NHIỀU FILE)
+    # TAB 2: GHÉP VIDEO v3.2.9 PRO (KÉO CHUỘT MƯỢT MÀ & KÉO THẢ NHIỀU FILE)
     # =================================================================
     def setup_merge_tab(self):
         paned = tk.PanedWindow(self.tab_merge, orient="horizontal", bg="#0f172a", sashwidth=4)
@@ -3554,7 +3555,7 @@ class VideoEditorApp(BaseAppWindow):
         self.merge_smart_codec_var = tk.BooleanVar(value=True)
         chk_m_smart = tk.Checkbutton(
             m_opts, 
-            text="⚡ Smart-Merge v3.2.8: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
+            text="⚡ Smart-Merge v3.2.9: Tự động sửa lỗi H.264 + H.265/HEVC (Hiển thị 100% hình ảnh)", 
             variable=self.merge_smart_codec_var, 
             bg="#0f172a", fg="#38bdf8", selectcolor="#1e293b", activebackground="#0f172a",
             font=("Segoe UI", 9, "bold")
@@ -3851,7 +3852,7 @@ class VideoEditorApp(BaseAppWindow):
     # =================================================================
 
     # =================================================================
-    # TAB 3: CHUYỂN ĐUÔI & TÁCH ÂM THANH SIÊU TỐC (v3.2.8 PRO)
+    # TAB 3: CHUYỂN ĐUÔI & TÁCH ÂM THANH SIÊU TỐC (v3.2.9 PRO)
     # =================================================================
     def setup_convert_tab(self):
         paned = tk.PanedWindow(self.tab_convert, orient="horizontal", bg="#0f172a", sashwidth=4)
@@ -4073,7 +4074,7 @@ class VideoEditorApp(BaseAppWindow):
             self.lbl_convert_out_dir.config(text=d if len(d) <= 35 else "..." + d[-32:])
 
     def run_convert_thread(self):
-        """Động cơ chuyển đổi định dạng & tách âm thanh siêu tốc v3.2.8 PRO"""
+        """Động cơ chuyển đổi định dạng & tách âm thanh siêu tốc v3.2.9 PRO"""
         if not self.ensure_ffmpeg_ready(self.run_convert_thread):
             return
 
@@ -4216,10 +4217,10 @@ class VideoEditorApp(BaseAppWindow):
 
         tk.Button(row_ff_btns, text="⚡ Tự Động Tải & Cài Đặt FFmpeg Ngay (1-Click)", bg="#0284c7", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.start_auto_download_ffmpeg).pack(side="left", padx=4)
         tk.Button(row_ff_btns, text="🔄 Kiểm Tra Lại", bg="#334155", fg="#ffffff", font=("Segoe UI", 9), relief="flat", command=self.refresh_ffmpeg_status).pack(side="left", padx=4)
-        tk.Button(row_ff_btns, text="🚀 Kiểm Tra Cập Nhật (v3.2.8)", bg="#10b981", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.check_updates_manual).pack(side="left", padx=4)
+        tk.Button(row_ff_btns, text="🚀 Kiểm Tra Cập Nhật (v3.2.9)", bg="#10b981", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.check_updates_manual).pack(side="left", padx=4)
         tk.Button(row_ff_btns, text="📱 Mã QR VPBank & Bản Quyền", bg="#4f46e5", fg="#ffffff", font=("Segoe UI", 9, "bold"), relief="flat", command=self.show_about_dialog).pack(side="left", padx=4)
 
-        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.8 PRO & Bản Quyền Tác Giả ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
+        box_info = tk.LabelFrame(p, text=" Thông Tin Phiên Bản v3.2.9 PRO & Bản Quyền Tác Giả ", font=("Segoe UI", 10, "bold"), fg="#34d399", bg="#0f172a", padx=12, pady=8)
         box_info.pack(fill="both", expand=True, pady=8)
 
         info_container = tk.Frame(box_info, bg="#0f172a")
@@ -4243,12 +4244,9 @@ class VideoEditorApp(BaseAppWindow):
             f"• Bản quyền tác giả: {AUTHOR_NAME}\n"
             f"• Email: {AUTHOR_EMAIL}  |  Zalo: {AUTHOR_ZALO}  |  QR Tài khoản: 0917417252 VPBank\n"
             "• Chế độ xử lý: Lossless Stream Copy (Tốc độ tối đa ~1-3s, không làm nóng CPU/GPU)\n"
-            "• Tính năng nâng cấp mới v3.2.8 PRO:\n"
-            "   + Hệ thống thông báo khi có bản cập nhật mới kèm lựa chọn [Cập Nhật Ngay] hoặc [Bỏ Qua]\n"
-            "   + Khắc phục triệt để lỗi cập nhật ở 40% (khi đang ở bản mới nhất) và 20% (tải bản mới chính xác)\n"
-            "   + Hoàn thiện tính năng Kéo & Thả Video 100% vào khung trên Linux (Nautilus, Dolphin, Thunar, Nemo)\n"
-            "   + Tự động nạp thư viện kéo thả tkinterdnd2 trên Linux không cần pip (Zero-Pip Wheel Bootstrap)\n"
-            "   + Khắc phục lỗi đóng gói GitHub Actions Release (Hỗ trợ Immutable Releases tự động)."
+            "• Tính năng nâng cấp mới v3.2.9 PRO:\n"
+            "   + Ẩn thông tin Kho GitHub trong hộp thoại Giới Thiệu & Bản Quyền\n"
+            "   + Sửa lỗi hiển thị mã QR VPBank bị cắt xén trong hộp thoại Giới Thiệu (mở rộng kích thước hộp thoại)\n"
         )
 
         txt_info = tk.Text(info_container, height=8, bg="#0f172a", fg="#e2e8f0", font=("Segoe UI", 9), wrap="word", relief="flat", bd=0)
@@ -4283,10 +4281,10 @@ class VideoEditorApp(BaseAppWindow):
     # =================================================================
 
     # =================================================================
-    # BỘ ĐỒNG HỒ ĐO THỜI GIAN XỬ LÝ & HOÀN THÀNH CHÍNH XÁC (v3.2.8 PRO)
+    # BỘ ĐỒNG HỒ ĐO THỜI GIAN XỬ LÝ & HOÀN THÀNH CHÍNH XÁC (v3.2.9 PRO)
     # =================================================================
     def start_process_timer(self, task_name="Đang xử lý"):
-        """Kích hoạt đếm thời gian xử lý thời gian thực chuyên nghiệp (v3.2.8 PRO)"""
+        """Kích hoạt đếm thời gian xử lý thời gian thực chuyên nghiệp (v3.2.9 PRO)"""
         self.proc_start_time = time.time()
         self.is_processing = True
         self.proc_task_name = task_name
@@ -4312,7 +4310,7 @@ class VideoEditorApp(BaseAppWindow):
         self.after(100, self.update_timer_loop)
 
     def finish_process_timer(self):
-        """Ghi nhận thời gian hoàn thành tác vụ & trả về chuỗi hiển thị chi tiết (v3.2.8 PRO)"""
+        """Ghi nhận thời gian hoàn thành tác vụ & trả về chuỗi hiển thị chi tiết (v3.2.9 PRO)"""
         self.is_processing = False
         dur = max(0.01, time.time() - getattr(self, "proc_start_time", time.time()))
         if dur < 60:
@@ -4358,7 +4356,7 @@ class VideoEditorApp(BaseAppWindow):
         self.btn_run_cut.config(state="disabled")
         self.cut_progress.configure(value=0)
         self.cut_progress_lbl.config(text="Đang bắt đầu cắt: 0%...", fg="#38bdf8")
-        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.8 PRO...")
+        self.status_var.set("Đang xử lý cắt video bằng Lossless Stream Copy v3.2.9 PRO...")
         self.start_process_timer("Đang cắt video")
 
         def worker():
@@ -4477,7 +4475,7 @@ class VideoEditorApp(BaseAppWindow):
                     self.after(0, lambda: (
                         self.add_merge_file_list([c1, c2]),
                         messagebox.showinfo(
-                            "Đã Tạo Video Mẫu Test v3.2.8",
+                            "Đã Tạo Video Mẫu Test v3.2.9",
                             f"Đã tạo và nạp thành công 2 video mẫu test vào danh sách:\n"
                             f"1. Clip 1: H.264 1080p @ 30FPS (4 giây)\n"
                             f"2. Clip 2: H.265 720p @ 60FPS (4 giây)\n\n"
@@ -4493,7 +4491,7 @@ class VideoEditorApp(BaseAppWindow):
         threading.Thread(target=worker, daemon=True).start()
 
     def run_merge_thread(self):
-        """Động cơ Ghép Video v3.2.8 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
+        """Động cơ Ghép Video v3.2.9 PRO - Hiển thị % tiến độ thời gian thực & khắc phục 100% lỗi tua nhanh"""
         if not self.ensure_ffmpeg_ready(self.run_merge_thread):
             return
 
@@ -4570,7 +4568,7 @@ class VideoEditorApp(BaseAppWindow):
                 must_use_filter_concat = is_mixed_codecs or is_mixed_res or is_mixed_fps or use_smart_merge
 
                 if must_use_filter_concat:
-                    self.status_var.set(f"⚡ Smart-Merge v3.2.8 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
+                    self.status_var.set(f"⚡ Smart-Merge v3.2.9 PRO: Filter Complex Reclocking ({target_fps}fps, {target_w}x{target_h}, 48kHz A/V Sync)...")
                     
                     cmd = [FFMPEG_EXE, "-y"]
                     filter_lines = []
@@ -4634,7 +4632,7 @@ class VideoEditorApp(BaseAppWindow):
                             self.merge_progress_lbl.config(text=f"✅ Đã ghép xong 100% trong {d}! (Hoàn thành lúc {c})", fg="#10b981"),
                             messagebox.showinfo(
                                 "Thành công", 
-                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.8 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
+                                f"Đã ghép xong {total} video hoàn hảo!\n\nLưu tại: {dest}\n{dur_info}\n• Thời gian xử lý: {d}\n• Hoàn thành lúc: {c}\n\n⚡ Công nghệ Smart-Merge v3.2.9 PRO: Mọi đoạn mượt mà ở tốc độ 1.0x."
                             ),
                             self.status_var.set(f"✅ Ghép video thành công 100%: {os.path.basename(dest)} • ⏱ Xử lý: {d} (lúc {c})")
                         ))
@@ -4726,7 +4724,7 @@ if __name__ == "__main__":
                 ctypes.windll.user32.MessageBoxW(
                     0, 
                     f"Ứng dụng gặp sự cố khi khởi chạy:\n\n{str(e)}\n\nChi tiết xem tại file 'crash_log.txt'.", 
-                    "Fast Video Cutter & Merger v3.2.8 - Crash Error", 
+                    "Fast Video Cutter & Merger v3.2.9 - Crash Error", 
                     0x10
                 )
             except Exception:
